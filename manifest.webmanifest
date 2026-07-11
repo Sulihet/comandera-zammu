@@ -1,0 +1,13 @@
+{
+  "name": "Comandera Zammu Waifuu",
+  "short_name": "Zammu Waifuu",
+  "description": "Toma pedidos y envíalos claros a cocina por WhatsApp.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fbf7ec",
+  "theme_color": "#d3ad55",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.png", "sizes": "448x448", "type": "image/png", "purpose": "any" }
+  ]
+}

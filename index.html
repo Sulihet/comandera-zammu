@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#d3ad55">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Zammu Waifuu">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Comandera · Zammu Waifuu</title>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">🐶 Zammu Waifuu</span>
+    <button id="btn-settings" class="icon-btn" aria-label="Ajustes">⚙️</button>
+  </header>
+
+  <main>
+    <!-- ================= PEDIDO ================= -->
+    <section id="view-pedido" class="view active">
+      <div id="cat-chips" class="chips"></div>
+      <div id="item-list" class="item-grid"></div>
+
+      <div class="cart">
+        <div class="cart-head">
+          <strong>Pedido actual</strong>
+          <span class="cart-total-label">Total <b id="cart-total">$0</b></span>
+        </div>
+        <div id="cart-lines" class="cart-lines"></div>
+        <button id="btn-send" class="btn-primary big" disabled>📲 Enviar a cocina (WhatsApp)</button>
+      </div>
+    </section>
+
+    <!-- ================= MENÚ ================= -->
+    <section id="view-menu" class="view">
+      <h1 class="view-title">Editar menú</h1>
+      <p class="view-sub">Cambia nombres, precios y disponibilidad. Se guarda solo.</p>
+      <div id="menu-editor"></div>
+    </section>
+
+    <!-- ================= CIERRE ================= -->
+    <section id="view-cierre" class="view">
+      <h1 class="view-title">Cierre del día</h1>
+      <div id="cierre-summary"></div>
+      <button id="btn-close-day" class="btn-primary big">🔒 Cerrar día</button>
+      <h3 class="section-title">Pedidos de hoy</h3>
+      <div id="today-orders"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="pedido"><span>🛎️</span>Pedido</button>
+    <button class="nav-btn" data-view="menu"><span>📋</span>Menú</button>
+    <button class="nav-btn" data-view="cierre"><span>💰</span>Cierre</button>
+  </nav>
+
+  <div id="modal-root"></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="js/menu-data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
