@@ -97,8 +97,12 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   = variant con/sin papas. El editor de menú edita nombres, precios y disponibilidad.
 - **Cierre agrupa por `nombre + detalle`**: así se ve cuántas de cada variante se
   vendieron (ej. "Banderilla (Queso · Cheddar)").
-- **Envío por WhatsApp** con `wa.me/<num>?text=...`; el número de cocina se configura
-  en Ajustes (⚙️). Si está vacío, WhatsApp deja elegir contacto.
+- **Envío a un GRUPO de WhatsApp** (elección del usuario): `sendOrder()` usa la Web Share
+  API (`navigator.share`) para abrir WhatsApp con el pedido ya escrito y que el mesero
+  elija su grupo de cocina (se recomienda fijarlo/pin). WhatsApp no permite deep-link a
+  un grupo con texto, por eso se usa el share sheet. Respaldo: si no hay `share`, usa
+  `wa.me/<kitchenNumber>` (número directo opcional en Ajustes) y, en última instancia,
+  copia al portapapeles.
 - **PWA local sin backend** en vez de app nativa o app con servidor: hay un solo
   celular tomando pedidos y wifi estable, así que un backend añade costo y
   complejidad sin beneficio. Reevaluar solo si en el futuro hay más de un mesero.
