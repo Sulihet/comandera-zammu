@@ -1,5 +1,5 @@
 /* Service worker: cache básico para que la app abra sin conexión. */
-const CACHE = 'zw-comandera-v7';
+const CACHE = 'zw-comandera-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS = [
   './js/app.js',
   './manifest.webmanifest',
   './icon.png',
+  './perro.png',
 ];
 
 self.addEventListener('install', (e) => {
