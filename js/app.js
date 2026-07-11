@@ -290,12 +290,18 @@
         const priceCtl = i.variants
           ? i.variants.map((v) => `<label class="mini">${esc(v.name)} <input type="number" inputmode="numeric" data-vprice="${i.id}:${v.id}" value="${v.price}"></label>`).join('')
           : `<label class="mini">Precio <input type="number" inputmode="numeric" data-price="${i.id}" value="${i.price || 0}"></label>`;
+        const extrasCtl = (i.extras && i.extras.length)
+          ? `<div class="edit-extras"><span class="extras-label">Extras (+ precio):</span>
+              ${i.extras.map((ex) => `<label class="mini">${esc(ex.name)} <input type="number" inputmode="numeric" data-xprice="${i.id}:${ex.id}" value="${ex.priceDelta || 0}"></label>`).join('')}
+            </div>`
+          : '';
         return `<div class="edit-row ${i.available === false ? 'off' : ''}">
             <div class="edit-row-top">
               <input type="text" class="name-input" data-name="${i.id}" value="${esc(i.name)}">
               <button class="link-danger" data-delitem="${i.id}">✕</button>
             </div>
             <div class="edit-prices">${priceCtl}</div>
+            ${extrasCtl}
             <label class="switch">
               <input type="checkbox" data-avail="${i.id}" ${i.available === false ? '' : 'checked'}>
               <span>${i.available === false ? 'Agotado' : 'Disponible'}</span>
@@ -565,6 +571,11 @@
         const it = menu.items.find((i) => i.id === iid);
         const v = it && it.variants.find((x) => x.id === vid);
         if (v) { v.price = Number(t.value) || 0; persistMenu(); }
+      } else if (t.dataset.xprice != null) {
+        const [iid, xid] = t.dataset.xprice.split(':');
+        const it = menu.items.find((i) => i.id === iid);
+        const ex = it && it.extras && it.extras.find((x) => x.id === xid);
+        if (ex) { ex.priceDelta = Number(t.value) || 0; persistMenu(); }
       }
     });
     $('#menu-editor').addEventListener('change', (e) => {

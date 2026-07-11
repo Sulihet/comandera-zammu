@@ -101,6 +101,7 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   vendieron (ej. "Banderilla (Queso · Cheddar)").
 - **Extras = multi-selección** (`item.extras[]` con `priceDelta`, Set en la hoja);
   distinto de `choices` (radio). Los extras suman al precio y salen en línea `➕`.
+  Sus precios son **editables en la sección Menú** (inputs `data-xprice="item:extra"`).
 - **Comer aquí / Para llevar**: atributo por pedido (`config.serviceMode`, toggle en el
   carrito). Va en el encabezado del mensaje y guardado en el pedido.
 - **Mensaje a WhatsApp agrupado por categoría** (título en negrita + emoji del menú)
