@@ -1,5 +1,5 @@
 /* Service worker: cache básico para que la app abra sin conexión. */
-const CACHE = 'zw-comandera-v4';
+const CACHE = 'zw-comandera-v5';
 const ASSETS = [
   './',
   './index.html',

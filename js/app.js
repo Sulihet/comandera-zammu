@@ -204,13 +204,23 @@
     Store.saveCart(cart);
     renderCart();
 
-    // abre WhatsApp
-    const text = encodeURIComponent(buildWhatsappText(order));
-    const num = (config.kitchenNumber || '').replace(/\D/g, '');
-    const url = num ? `https://wa.me/${num}?text=${text}` : `https://wa.me/?text=${text}`;
-    window.open(url, '_blank');
+    // comparte el pedido (permite elegir un grupo de WhatsApp)
+    shareToKitchen(buildWhatsappText(order));
+    toast(`Pedido #${order.num} listo ✅`);
+  }
 
-    toast(`Pedido #${order.num} enviado ✅`);
+  async function shareToKitchen(text) {
+    // 1) Web Share: abre WhatsApp con el texto ya escrito y deja elegir el GRUPO de cocina
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; } // el usuario canceló: no hacer nada
+    }
+    // 2) Respaldo: número directo si se configuró en Ajustes
+    const num = (config.kitchenNumber || '').replace(/\D/g, '');
+    if (num) { window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank'); return; }
+    // 3) Último recurso: copiar al portapapeles para pegar en el grupo
+    try { await navigator.clipboard.writeText(text); toast('Pedido copiado: pégalo en tu grupo de cocina'); }
+    catch (e) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
   }
 
   // ==========================================================
@@ -404,9 +414,13 @@
     body.innerHTML = `
       <h2>Ajustes</h2>
       <div class="field">
-        <label>WhatsApp de cocina <small>(con lada, sin +)</small></label>
+        <label>Envío a cocina (grupo de WhatsApp)</label>
+        <p class="hint" style="margin-top:0">Al tocar <b>Enviar a cocina</b>, se abre WhatsApp con el pedido ya escrito y eliges tu <b>grupo de cocina</b>. Consejo: fija (📌 pin) ese grupo en WhatsApp para que aparezca primero y sea un toque.</p>
+      </div>
+      <div class="field">
+        <label>Número directo <small>(opcional — solo si NO usas grupo)</small></label>
         <input type="tel" id="cfg-num" inputmode="numeric" placeholder="ej. 525569738176" value="${esc(config.kitchenNumber || '')}">
-        <p class="hint">Si lo dejas vacío, al enviar podrás elegir el contacto manualmente en WhatsApp.</p>
+        <p class="hint">Respaldo para celulares sin opción de “compartir”: el pedido iría directo a este número.</p>
       </div>
       <button class="btn-primary big" id="cfg-save">Guardar</button>
 
