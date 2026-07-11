@@ -90,12 +90,22 @@ const DEFAULT_MENU = {
         { id: 'sinpapas', name: 'Sin papas', price: 85 },
         { id: 'conpapas', name: 'Con papas', price: 95 },
       ],
+      extras: [
+        { id: 'carne',   name: 'Carne extra',    priceDelta: 15 },
+        { id: 'tocino',  name: 'Tocino',         priceDelta: 10 },
+        { id: 'quesoam', name: 'Queso amarillo', priceDelta: 5 },
+      ],
     },
     {
       id: 'ham_sencilla', cat: 'fastfood', name: 'Hamburguesa Sencilla', available: true, notes: true,
       variants: [
         { id: 'sinpapas', name: 'Sin papas', price: 75 },
         { id: 'conpapas', name: 'Con papas', price: 85 },
+      ],
+      extras: [
+        { id: 'carne',   name: 'Carne extra',    priceDelta: 15 },
+        { id: 'tocino',  name: 'Tocino',         priceDelta: 10 },
+        { id: 'quesoam', name: 'Queso amarillo', priceDelta: 5 },
       ],
     },
     { id: 'hotdog', cat: 'fastfood', name: 'Hot Dog (incluye papas)', available: true, notes: true, price: 75 },

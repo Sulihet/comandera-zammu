@@ -15,7 +15,7 @@
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // ---------- Cálculo de precio de una línea ----------
-  function calcUnitPrice(item, variant, selections) {
+  function calcUnitPrice(item, variant, selections, extras) {
     let base = variant ? variant.price : (item.price || 0);
     let override = null;
     (item.choices || []).forEach((ch) => {
@@ -26,7 +26,9 @@
       if (opt.overridePrice != null) override = opt.overridePrice;
       else base += (opt.priceDelta || 0);
     });
-    return override != null ? override : base;
+    let total = override != null ? override : base;
+    (item.extras || []).forEach((ex) => { if (extras && extras.has(ex.id)) total += (ex.priceDelta || 0); });
+    return total;
   }
 
   function buildDetail(item, variant, selections) {
@@ -77,6 +79,7 @@
             <div>
               <div class="cart-name">${esc(l.name)}</div>
               ${l.detail ? `<div class="cart-detail">${esc(l.detail)}</div>` : ''}
+              ${(l.extras && l.extras.length) ? `<div class="cart-detail">➕ ${esc(l.extras.join(', '))}</div>` : ''}
               ${l.notes ? `<div class="cart-note">📝 ${esc(l.notes)}</div>` : ''}
             </div>
           </div>
@@ -89,6 +92,16 @@
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     $('#cart-total').textContent = money(total);
     $('#btn-send').disabled = !cart.length;
+    renderServiceMode();
+  }
+
+  function renderServiceMode() {
+    const el = $('#service-mode');
+    if (!el) return;
+    const m = config.serviceMode || 'aqui';
+    el.innerHTML = `
+      <button class="seg ${m === 'aqui' ? 'active' : ''}" data-mode="aqui">🍽️ Comer aquí</button>
+      <button class="seg ${m === 'llevar' ? 'active' : ''}" data-mode="llevar">🥡 Para llevar</button>`;
   }
 
   // ---------- Hoja de configuración de un platillo ----------
@@ -96,6 +109,7 @@
     let variant = item.variants ? item.variants[0] : null;
     const selections = {};
     (item.choices || []).forEach((ch) => { if (ch.required) selections[ch.id] = ch.options[0].id; });
+    const extras = new Set();
     let qty = 1;
     let notes = '';
 
@@ -120,16 +134,26 @@
           </div>
         </div>`).join('');
 
+      const extrasHtml = (item.extras && item.extras.length) ? `
+        <div class="field">
+          <label>Extras <small>(opcional, se cobran aparte)</small></label>
+          <div class="opt-row">
+            ${item.extras.map((ex) =>
+              `<button class="opt ${extras.has(ex.id) ? 'sel' : ''}" data-extra="${ex.id}">${esc(ex.name)}<small>+${money(ex.priceDelta)}</small></button>`
+            ).join('')}
+          </div>
+        </div>` : '';
+
       const notesHtml = item.notes ? `
         <div class="field">
           <label>Nota para cocina <small>(modificaciones)</small></label>
           <input type="text" id="sheet-notes" placeholder="ej. sin cebolla, extra queso" value="${esc(notes)}">
         </div>` : '';
 
-      const unit = calcUnitPrice(item, variant, selections);
+      const unit = calcUnitPrice(item, variant, selections, extras);
       body.innerHTML = `
         <h2>${esc(item.name)}</h2>
-        ${variantHtml}${choicesHtml}${notesHtml}
+        ${variantHtml}${choicesHtml}${extrasHtml}${notesHtml}
         <div class="field qty-field">
           <label>Cantidad</label>
           <div class="stepper">
@@ -148,15 +172,22 @@
         draw();
       });
       $$('[data-qty]', body).forEach((b) => b.onclick = () => { qty = Math.max(1, qty + Number(b.dataset.qty)); draw(); });
+      $$('[data-extra]', body).forEach((b) => b.onclick = () => {
+        const id = b.dataset.extra;
+        if (extras.has(id)) extras.delete(id); else extras.add(id);
+        draw();
+      });
       const notesInput = $('#sheet-notes', body);
       if (notesInput) notesInput.oninput = (e) => { notes = e.target.value; };
       $('#sheet-add', body).onclick = () => {
         // recoge la nota final por si el usuario no disparó oninput
         const ni = $('#sheet-notes', body);
+        const extraNames = (item.extras || []).filter((ex) => extras.has(ex.id)).map((ex) => ex.name);
         cart.push({
-          uid: uid(), itemId: item.id, name: item.name,
+          uid: uid(), itemId: item.id, name: item.name, cat: item.cat,
           detail: buildDetail(item, variant, selections),
-          unitPrice: calcUnitPrice(item, variant, selections),
+          extras: extraNames,
+          unitPrice: calcUnitPrice(item, variant, selections, extras),
           qty, notes: ni ? ni.value.trim() : '',
         });
         Store.saveCart(cart);
@@ -174,13 +205,37 @@
   function buildWhatsappText(order) {
     const d = new Date(order.ts);
     const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}* · ${hora}\n\n`;
+    const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
+    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}* · ${hora}\n*${modeLabel}*\n`;
+
+    // agrupa las líneas por categoría, en el orden del menú
+    const groups = {};
     order.lines.forEach((l) => {
-      t += `• ${l.qty}× ${l.name}`;
-      if (l.detail) t += ` (${l.detail})`;
-      t += `\n`;
-      if (l.notes) t += `   📝 ${l.notes}\n`;
+      const k = l.cat || 'otros';
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(l);
     });
+    const order2 = menu.categories.map((c) => c.id);
+    Object.keys(groups).forEach((k) => { if (!order2.includes(k)) order2.push(k); });
+
+    const renderLine = (l) => {
+      let s = `• ${l.qty}× ${l.name}`;
+      if (l.detail) s += ` — ${l.detail}`;
+      s += `\n`;
+      if (l.extras && l.extras.length) s += `   ➕ ${l.extras.join(', ')}\n`;
+      if (l.notes) s += `   📝 ${l.notes}\n`;
+      return s;
+    };
+
+    order2.forEach((cid) => {
+      const lines = groups[cid];
+      if (!lines || !lines.length) return;
+      const cat = menu.categories.find((c) => c.id === cid);
+      const title = cat ? `${cat.icon || ''} ${cat.name}` : 'Otros';
+      t += `\n*━━ ${title.trim().toUpperCase()} ━━*\n`;
+      lines.forEach((l) => { t += renderLine(l); });
+    });
+
     t += `\n*TOTAL: ${money(order.total)}*`;
     return t;
   }
@@ -190,6 +245,7 @@
     config.lastOrderNum = (config.lastOrderNum || 0) + 1;
     const order = {
       id: uid(), num: config.lastOrderNum, ts: Date.now(),
+      serviceMode: config.serviceMode || 'aqui',
       lines: Store.clone(cart),
       total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
       canceled: false,
@@ -487,6 +543,13 @@
       renderCart();
     };
     $('#btn-send').onclick = sendOrder;
+    $('#service-mode').onclick = (e) => {
+      const b = e.target.closest('[data-mode]');
+      if (!b) return;
+      config.serviceMode = b.dataset.mode;
+      Store.saveConfig(config);
+      renderServiceMode();
+    };
 
     // editor de menú (delegación)
     $('#menu-editor').addEventListener('input', (e) => {

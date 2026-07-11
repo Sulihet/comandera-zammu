@@ -67,6 +67,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   - Hamburguesa Hawaiana $85 (con papas $95).
   - Hamburguesa Sencilla $75 (con papas $85).
   - Hot Dog $75 (incluye papas).
+  - **Extras de hamburguesa** (multi-selección, se cobran aparte): Carne extra $15 ·
+    Tocino $10 · Queso amarillo $5.
 - **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
   Gourmet $35 (pistacho/cheese cake/frutos rojos) · Paquete 4 baos $105 ·
   Paquete 6 baos $165.
@@ -97,6 +99,13 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   = variant con/sin papas. El editor de menú edita nombres, precios y disponibilidad.
 - **Cierre agrupa por `nombre + detalle`**: así se ve cuántas de cada variante se
   vendieron (ej. "Banderilla (Queso · Cheddar)").
+- **Extras = multi-selección** (`item.extras[]` con `priceDelta`, Set en la hoja);
+  distinto de `choices` (radio). Los extras suman al precio y salen en línea `➕`.
+- **Comer aquí / Para llevar**: atributo por pedido (`config.serviceMode`, toggle en el
+  carrito). Va en el encabezado del mensaje y guardado en el pedido.
+- **Mensaje a WhatsApp agrupado por categoría** (título en negrita + emoji del menú)
+  para que cada cocinero identifique su sección. Ver `buildWhatsappText()`.
+- **Logo real en el encabezado**: `<img class="brand-logo" src="icon.png">` (no emoji).
 - **Envío a un GRUPO de WhatsApp** (elección del usuario): `sendOrder()` usa la Web Share
   API (`navigator.share`) para abrir WhatsApp con el pedido ya escrito y que el mesero
   elija su grupo de cocina (se recomienda fijarlo/pin). WhatsApp no permite deep-link a
