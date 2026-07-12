@@ -3,6 +3,35 @@
 **Negocio:** Zammu Waifuu (comida coreana / fast food). Ferrocarril de Cuernavaca 1.
 Tel/pedidos: 55 6973 8176. IG: @zammuwaifuu.
 
+## Metodología de trabajo: Spec-Driven Development (obligatoria)
+
+**Todo** feature, cambio o desarrollo en este proyecto (y en cualquier proyecto)
+se hace con **Spec-Driven Development**: se define QUÉ construir y se verifica
+contra ello, antes de ejecutar. No se salta al código sin pasar por el spec y el
+plan. Los 7 pasos y su skill asociado:
+
+1. **Feature, proyecto o desarrollo** — surge la idea o la petición.
+2. **Aclarar idea** (entender al usuario) → skill **`brainstorming`**: pregunta
+   para eliminar ambigüedades y termina ofreciendo 2-3 alternativas para empezar.
+3. **Spec del usuario** (QUÉ se quiere y para quién, no el cómo) → skill
+   **`design-spec`**: escribe `docs/specs/YYYY-MM-DD-title.md` y tiene un
+   **approval gate** (iterar o aprobar). No se avanza sin spec aprobado.
+4. **Plan** (traduce el spec en pasos ejecutables y verificables) → al activar el
+   **Modo Plan** se usa **`planning-QS`** (las 4 preguntas: trabajo principal,
+   límites, éxito, casos raros) y luego **`design-plan`**, que guarda el plan en
+   `docs/plans/YYYY-MM-DD-title.md`.
+5. **Ejecutar** — se implementan las tareas del plan.
+6. **Verificar** → skill **`verify-after-changes`** (bucle entre Ejecutar y
+   Verificar): levanta el servidor, prueba casos clave en el navegador y compara
+   contra el plan y el spec. **No cumple → fix (volver a Ejecutar)**; **sí cumple
+   → luz verde** y se pasa al output.
+7. **Output / publicar** — se entrega o publica (GitHub Pages, ver
+   `GUIA-PUBLICAR.md`) y, si tocó CSS/JS, se sube la versión `CACHE` en `sw.js`.
+
+- Specs → `docs/specs/YYYY-MM-DD-title.md`. Planes → `docs/plans/YYYY-MM-DD-title.md`
+  (mismo `title` que su spec para emparejarlos).
+- Los skills viven en `.claude/skills/<nombre>/SKILL.md` dentro del proyecto.
+
 ## Trabajo principal
 Web app en el celular donde **un mesero** arma el pedido de un cliente tocando
 platillos de un menú (sin escribir a mano), le agrega modificaciones, y lo envía
