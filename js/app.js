@@ -14,6 +14,10 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+  // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
+  const KITCHEN_CATS = ['fastfood', 'coreano', 'baos'];
+  const orderHasKitchen = (lines) => lines.some((l) => KITCHEN_CATS.includes(l.cat));
+
   // ---------- Cálculo de precio de una línea ----------
   function calcUnitPrice(item, variant, selections, extras) {
     let base = variant ? variant.price : (item.price || 0);
@@ -91,7 +95,12 @@
     }
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     $('#cart-total').textContent = money(total);
-    $('#btn-send').disabled = !cart.length;
+    const btn = $('#btn-send');
+    btn.disabled = !cart.length;
+    // el texto avisa si el pedido irá a cocina o solo se guardará
+    btn.textContent = (cart.length && !orderHasKitchen(cart))
+      ? '💾 Guardar pedido (no va a cocina)'
+      : '📲 Enviar a cocina (WhatsApp)';
     renderServiceMode();
   }
 
@@ -208,15 +217,13 @@
     const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
     let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}* · ${hora}\n*${modeLabel}*\n`;
 
-    // agrupa las líneas por categoría, en el orden del menú
+    // solo las líneas de categorías que cocina prepara
     const groups = {};
     order.lines.forEach((l) => {
-      const k = l.cat || 'otros';
-      if (!groups[k]) groups[k] = [];
-      groups[k].push(l);
+      if (!KITCHEN_CATS.includes(l.cat)) return;
+      if (!groups[l.cat]) groups[l.cat] = [];
+      groups[l.cat].push(l);
     });
-    const order2 = menu.categories.map((c) => c.id);
-    Object.keys(groups).forEach((k) => { if (!order2.includes(k)) order2.push(k); });
 
     const renderLine = (l) => {
       let s = `• ${l.qty}× ${l.name}`;
@@ -227,17 +234,15 @@
       return s;
     };
 
-    order2.forEach((cid) => {
-      const lines = groups[cid];
+    // recorre en el orden del menú, solo categorías de cocina con líneas
+    menu.categories.forEach((cat) => {
+      const lines = groups[cat.id];
       if (!lines || !lines.length) return;
-      const cat = menu.categories.find((c) => c.id === cid);
-      const title = cat ? `${cat.icon || ''} ${cat.name}` : 'Otros';
-      t += `\n*━━ ${title.trim().toUpperCase()} ━━*\n`;
+      t += `\n*━━ ${`${cat.icon || ''} ${cat.name}`.trim().toUpperCase()} ━━*\n`;
       lines.forEach((l) => { t += renderLine(l); });
     });
 
-    t += `\n*TOTAL: ${money(order.total)}*`;
-    return t;
+    return t; // sin total: cocina no necesita el monto
   }
 
   function sendOrder() {
@@ -260,9 +265,14 @@
     Store.saveCart(cart);
     renderCart();
 
-    // comparte el pedido (permite elegir un grupo de WhatsApp)
-    shareToKitchen(buildWhatsappText(order));
-    toast(`Pedido #${order.num} listo ✅`);
+    // el pedido YA quedó guardado y contará en el cierre del día.
+    // Solo se envía a cocina si incluye algo que ellos preparan.
+    if (orderHasKitchen(order.lines)) {
+      shareToKitchen(buildWhatsappText(order));
+      toast(`Pedido #${order.num} enviado a cocina ✅`);
+    } else {
+      toast(`Pedido #${order.num} guardado ✅ (no va a cocina)`);
+    }
   }
 
   async function shareToKitchen(text) {

@@ -105,7 +105,13 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Comer aquí / Para llevar**: atributo por pedido (`config.serviceMode`, toggle en el
   carrito). Va en el encabezado del mensaje y guardado en el pedido.
 - **Mensaje a WhatsApp agrupado por categoría** (título en negrita + emoji del menú)
-  para que cada cocinero identifique su sección. Ver `buildWhatsappText()`.
+  para que cada cocinero identifique su sección. Ver `buildWhatsappText()`. **Sin total**
+  (cocina no necesita el monto) y **solo con categorías de cocina**.
+- **Solo se envía a cocina lo que ellos preparan**: `KITCHEN_CATS = [fastfood, coreano,
+  baos]`. Al enviar, el pedido SIEMPRE se guarda (cuenta en el cierre); el WhatsApp solo
+  sale si el pedido incluye alguna categoría de cocina. Si es solo bebidas/banderillas,
+  no se envía (el botón cambia a "Guardar pedido (no va a cocina)"). Ver `sendOrder()` y
+  `orderHasKitchen()`.
 - **Logo real en el encabezado**: `<img class="brand-logo" src="icon.png">` (no emoji).
 - **Envío a un GRUPO de WhatsApp** (elección del usuario): `sendOrder()` usa la Web Share
   API (`navigator.share`) para abrir WhatsApp con el pedido ya escrito y que el mesero
