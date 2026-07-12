@@ -19,6 +19,16 @@
   const KITCHEN_CATS = ['fastfood', 'coreano', 'baos'];
   const orderHasKitchen = (lines) => lines.some((l) => KITCHEN_CATS.includes(l.cat));
 
+  // Estado del pedido en la lista de Cierre (solo control visual, no toca dinero).
+  // 2 valores: al enviarse nace "En preparación" y con un toque alterna a "Entregado".
+  const ORDER_STATUS = ['preparacion', 'entregado'];
+  const STATUS_META = {
+    preparacion: { label: '⏳ En preparación', cls: 'st-prep' },
+    entregado:   { label: '✅ Entregado',      cls: 'st-entregado' },
+  };
+  const statusOf = (o) => (o && STATUS_META[o.status]) ? o.status : 'preparacion'; // compat pedidos viejos
+  const nextStatus = (s) => ORDER_STATUS[(ORDER_STATUS.indexOf(statusOf({ status: s })) + 1) % ORDER_STATUS.length];
+
   // ---------- Cálculo de precio de una línea ----------
   function calcUnitPrice(item, variant, selections, extras) {
     let base = variant ? variant.price : (item.price || 0);
@@ -276,6 +286,7 @@
       lines: Store.clone(cart),
       total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
       canceled: false,
+      status: 'preparacion', // nace "En preparación" al enviarse a cocina
     };
     const orders = Store.getOrders();
     orders.push(order);
@@ -456,6 +467,9 @@
       const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       const resumen = o.lines.map((l) => `${l.qty}× ${l.name}`).join(', ');
       const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+      const st = statusOf(o);
+      const statusChip = o.canceled ? '' :
+        `<button class="order-status ${STATUS_META[st].cls}" data-status="${o.id}">${STATUS_META[st].label}</button>`;
 
       const detailLines = o.lines.map((l) => `
         <div class="detail-line">
@@ -469,12 +483,13 @@
           <span>${money(l.unitPrice * l.qty)}</span>
         </div>`).join('');
 
-      return `<div class="order-card ${o.canceled ? 'canceled' : ''}">
+      return `<div class="order-card ${o.canceled ? 'canceled' : STATUS_META[st].cls}">
           <div class="order-head" data-toggle="${o.id}">
             <div>
               <strong>#${o.num}</strong> ${o.corrected ? '✏️' : ''} · ${hora} · ${modeIcon} · ${money(o.total)}
               <div class="order-sum">${esc(resumen)}</div>
             </div>
+            ${statusChip}
             <span class="chevron">▸</span>
           </div>
           <div class="order-detail" data-detail="${o.id}" hidden>
@@ -490,6 +505,16 @@
           </div>
         </div>`;
     }).join('') : '<p class="empty">Sin pedidos aún.</p>';
+  }
+
+  // Alterna el estado del pedido (En preparación ↔ Entregado). Solo control visual.
+  function advanceStatus(id) {
+    const orders = Store.getOrders();
+    const o = orders.find((x) => x.id === id);
+    if (!o || o.canceled) return;
+    o.status = nextStatus(statusOf(o));
+    Store.saveOrders(orders);
+    renderCierre();
   }
 
   function cancelOrder(id) {
@@ -851,9 +876,11 @@
 
     // cierre: desglosar (toggle), editar y anular
     $('#cierre-summary').closest('.view').addEventListener('click', (e) => {
+      const status = e.target.closest('[data-status]');
       const toggle = e.target.closest('[data-toggle]');
       const edit = e.target.closest('[data-edit]');
       const cancel = e.target.closest('[data-cancel]');
+      if (status) { advanceStatus(status.dataset.status); return; } // no debe expandir la tarjeta
       if (edit) { editOrder(edit.dataset.edit); return; }
       if (cancel) { cancelOrder(cancel.dataset.cancel); return; }
       if (toggle) toggleCard(toggle);

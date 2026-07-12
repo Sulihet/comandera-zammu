@@ -133,6 +133,14 @@ main { max-width: 640px; margin: 0 auto; }
 .order-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
 .order-head strong { font-size: 15px; }
 .chevron { color: var(--accent-ink); font-size: 15px; flex: 0 0 auto; }
+
+/* estado del pedido: chip de un toque (En preparación ↔ Entregado) */
+.order-status { flex: 0 0 auto; border: none; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.st-prep { background: #ffe4b3; color: #8a5300; }       /* ámbar: en preparación */
+.st-entregado { background: #d8efdd; color: #1e7a3d; }  /* verde: entregado */
+/* acento de borde izquierdo por estado, para verlo de un vistazo */
+.order-card.st-prep { border-left: 4px solid #e0a53d; }
+.order-card.st-entregado { border-left: 4px solid #3aa15a; }
 .order-detail { padding: 0 12px 12px; border-top: 1px solid var(--line); }
 .detail-line { display: flex; gap: 8px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .detail-line:last-of-type { border-bottom: none; }
