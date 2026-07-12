@@ -93,6 +93,8 @@ main { max-width: 640px; margin: 0 auto; }
 .btn-primary:disabled { opacity: .45; }
 .btn-primary.big { width: 100%; font-size: 16px; padding: 16px; }
 .btn-ghost { width: 100%; background: transparent; border: 1.5px dashed var(--line); color: var(--muted); padding: 12px; border-radius: 12px; font-weight: 600; margin-top: 10px; }
+.btn-outline { width: 100%; background: transparent; border: 1.5px solid var(--primary); color: var(--accent-ink); padding: 14px; border-radius: 14px; font-weight: 800; font-size: 16px; margin-top: 10px; }
+.btn-outline:active { background: #fbf1d6; }
 .btn-ghost.danger { color: var(--danger); border-color: #f3c9c9; }
 .file-btn { display: block; text-align: center; cursor: pointer; }
 .link-danger { background: none; border: none; color: var(--danger); font-weight: 600; font-size: 13px; padding: 2px 4px; }

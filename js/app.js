@@ -312,6 +312,53 @@
     catch (e) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
   }
 
+  // ---------- Resumen del día (para enviar al administrador) ----------
+  function dayBreakdown(orders) {
+    const active = orders.filter((o) => !o.canceled);
+    const totals = {};
+    let grand = 0;
+    active.forEach((o) => o.lines.forEach((l) => {
+      const key = l.name + (l.detail ? ` (${l.detail})` : '');
+      if (!totals[key]) totals[key] = { qty: 0, money: 0 };
+      totals[key].qty += l.qty;
+      totals[key].money += l.unitPrice * l.qty;
+      grand += l.unitPrice * l.qty;
+    }));
+    return { totals, grand, count: active.length };
+  }
+
+  function reportText(dateStr, totals, count, grand) {
+    let t = `📊 *ZAMMU WAIFUU — Resumen del día*\n🗓️ ${fmtDate(dateStr)}\n`;
+    t += `━━━━━━━━━━━━\n`;
+    t += `🧾 Pedidos: ${count}\n`;
+    t += `💰 *TOTAL: ${money(grand)}*\n\n`;
+    t += `*Vendido por platillo:*\n`;
+    Object.entries(totals || {})
+      .map(([name, v]) => ({ name, qty: typeof v === 'number' ? v : v.qty, mon: typeof v === 'number' ? null : v.money }))
+      .sort((a, b) => (b.mon || 0) - (a.mon || 0))
+      .forEach((r) => { t += `• ${r.qty}× ${r.name}${r.mon != null ? ` — ${money(r.mon)}` : ''}\n`; });
+    return t;
+  }
+
+  async function shareText(text) {
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text); toast('Resumen copiado ✅ pégalo donde quieras'); }
+    catch (e) { window.prompt('Copia el resumen:', text); }
+  }
+
+  function shareDayReport() {
+    const { totals, grand, count } = dayBreakdown(Store.getOrders());
+    if (!count) { toast('No hay ventas hoy para enviar.'); return; }
+    shareText(reportText(Store.todayStr(), totals, count, grand));
+  }
+
+  function shareCloseReport(close) {
+    shareText(reportText(close.date, close.totals || {}, close.orderCount || 0, close.grandTotal || 0));
+  }
+
   // ==========================================================
   //  VISTA: EDITAR MENÚ
   // ==========================================================
@@ -548,6 +595,7 @@
             <h4 class="detail-h">Vendido por platillo</h4>
             ${rows || '<p class="empty">Sin desglose.</p>'}
             ${ordersHtml}
+            <button class="btn-ghost" data-share="${c.id || c.closedAt}">📤 Enviar resumen de este día</button>
           </div>
         </div>`;
     }).join('');
@@ -790,9 +838,17 @@
       if (toggle) toggleCard(toggle);
     });
     $('#btn-close-day').onclick = closeDay;
+    $('#btn-share-day').onclick = shareDayReport;
 
-    // historial: expandir un día cerrado
+    // historial: compartir resumen o expandir un día cerrado
     $('#view-historial').addEventListener('click', (e) => {
+      const share = e.target.closest('[data-share]');
+      if (share) {
+        const key = share.dataset.share;
+        const c = Store.getCloses().find((x) => String(x.id || x.closedAt) === key);
+        if (c) shareCloseReport(c);
+        return;
+      }
       const h = e.target.closest('[data-htoggle]');
       if (h) toggleCard(h);
     });
