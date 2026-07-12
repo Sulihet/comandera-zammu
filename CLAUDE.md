@@ -104,8 +104,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Pedidos de hoy = tarjetas expandibles**: tocar el encabezado despliega el detalle
   completo (líneas, extras, notas, modo). Ver `renderCierre()` y `toggleCard()`.
 - **Resumen del día para el administrador** (`reportText()` + `shareText()`): texto
-  legible (fecha, nº pedidos, total, desglose por platillo con dinero) que se comparte
-  por WhatsApp/correo. Botón en Cierre (día actual) y en cada día del Historial.
+  legible con fecha, nº pedidos, total, **desglose por platillo con dinero** y
+  **detalle de cada orden**. Se comparte por WhatsApp/correo. Botón en Cierre (día
+  actual) y en cada día del Historial. Los cierres viejos sin `orders` omiten el detalle.
 - **Historial de días cerrados** (4ª pestaña 📚): `closeDay()` guarda cada cierre en
   `Store.closes` con `{date, closedAt, orderCount, grandTotal, totals:{qty,money}, orders}`
   (detalle completo). `renderHistorial()` los muestra expandibles. Tolera cierres viejos

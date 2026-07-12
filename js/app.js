@@ -327,16 +327,35 @@
     return { totals, grand, count: active.length };
   }
 
-  function reportText(dateStr, totals, count, grand) {
+  function reportText(dateStr, totals, count, grand, orders) {
     let t = `📊 *ZAMMU WAIFUU — Resumen del día*\n🗓️ ${fmtDate(dateStr)}\n`;
     t += `━━━━━━━━━━━━\n`;
     t += `🧾 Pedidos: ${count}\n`;
     t += `💰 *TOTAL: ${money(grand)}*\n\n`;
+
+    // desglose por platillo con su monto total
     t += `*Vendido por platillo:*\n`;
     Object.entries(totals || {})
       .map(([name, v]) => ({ name, qty: typeof v === 'number' ? v : v.qty, mon: typeof v === 'number' ? null : v.money }))
       .sort((a, b) => (b.mon || 0) - (a.mon || 0))
       .forEach((r) => { t += `• ${r.qty}× ${r.name}${r.mon != null ? ` — ${money(r.mon)}` : ''}\n`; });
+
+    // detalle de cada orden (si está disponible)
+    if (Array.isArray(orders) && orders.length) {
+      t += `\n*Detalle de órdenes:*\n`;
+      orders.forEach((o) => {
+        const d = new Date(o.ts);
+        const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const mode = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+        t += `\n*#${o.num}${o.corrected ? ' ✏️' : ''}* · ${hora} · ${mode} · ${money(o.total)}\n`;
+        o.lines.forEach((l) => {
+          t += `   • ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''}`;
+          if (l.extras && l.extras.length) t += ` ➕ ${l.extras.join(', ')}`;
+          if (l.notes) t += ` 📝 ${l.notes}`;
+          t += `\n`;
+        });
+      });
+    }
     return t;
   }
 
@@ -350,13 +369,15 @@
   }
 
   function shareDayReport() {
-    const { totals, grand, count } = dayBreakdown(Store.getOrders());
+    const orders = Store.getOrders();
+    const active = orders.filter((o) => !o.canceled);
+    const { totals, grand, count } = dayBreakdown(orders);
     if (!count) { toast('No hay ventas hoy para enviar.'); return; }
-    shareText(reportText(Store.todayStr(), totals, count, grand));
+    shareText(reportText(Store.todayStr(), totals, count, grand, active));
   }
 
   function shareCloseReport(close) {
-    shareText(reportText(close.date, close.totals || {}, close.orderCount || 0, close.grandTotal || 0));
+    shareText(reportText(close.date, close.totals || {}, close.orderCount || 0, close.grandTotal || 0, close.orders || null));
   }
 
   // ==========================================================
