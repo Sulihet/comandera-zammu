@@ -87,8 +87,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - `icon.png` — ícono = **logo real** de Zammu Waifuu (448×448, fondo rosa cuadrado).
 - `.nojekyll` + `GUIA-PUBLICAR.md` — publicación en GitHub Pages (guía paso a paso sin terminal).
 - **Respaldo/Restaurar**: en Ajustes (⚙️), `exportBackup()`/`importBackup()` en `js/app.js`
-  exportan e importan `{menu, kitchenNumber}` como archivo JSON para mover el menú entre
-  celulares sin servidor.
+  exportan e importan un JSON (formato `v:2`) con `{menu, kitchenNumber, lastOrderNum,
+  dayStartedAt, orders, closes}`. Sirve para mover el menú entre celulares y como red de
+  seguridad de la jornada. Al restaurar, el menú/precios se reemplazan siempre; los
+  **pedidos del día se restauran solo si el usuario confirma** (segundo diálogo).
 
 ## Decisiones de diseño
 - **Cobertura especial = precio fijo**: las opciones con `overridePrice` (Boneless/

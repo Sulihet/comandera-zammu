@@ -509,8 +509,15 @@
   //  RESPALDO / RESTAURAR (mover menú entre celulares, sin servidor)
   // ==========================================================
   function exportBackup() {
-    const data = { app: 'zammu-comandera', v: 1, exportedAt: new Date().toISOString(),
-      menu, kitchenNumber: config.kitchenNumber || '' };
+    const data = {
+      app: 'zammu-comandera', v: 2, exportedAt: new Date().toISOString(),
+      menu,
+      kitchenNumber: config.kitchenNumber || '',
+      lastOrderNum: config.lastOrderNum || 0,
+      dayStartedAt: config.dayStartedAt || Store.todayStr(),
+      orders: Store.getOrders(),   // pedidos del día
+      closes: Store.getCloses(),   // cierres archivados
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -532,12 +539,29 @@
         if (!confirm('¿Restaurar este respaldo? Reemplazará el menú y los precios actuales de este celular.')) return;
         menu = data.menu;
         Store.saveMenu(menu);
-        if (typeof data.kitchenNumber === 'string') { config.kitchenNumber = data.kitchenNumber; Store.saveConfig(config); }
+        if (typeof data.kitchenNumber === 'string') config.kitchenNumber = data.kitchenNumber;
+
+        // pedidos del día (opcional): solo si el respaldo los incluye
+        let restauroPedidos = false;
+        if (Array.isArray(data.orders) && data.orders.length) {
+          const activos = data.orders.filter((o) => !o.canceled);
+          const monto = activos.reduce((s, o) => s + (o.total || 0), 0);
+          if (confirm(`El respaldo incluye ${activos.length} pedido(s) del día (${money(monto)}). ¿Restaurarlos también? Reemplazará los pedidos actuales de este celular.`)) {
+            Store.saveOrders(data.orders);
+            if (Array.isArray(data.closes)) Store.saveCloses(data.closes);
+            if (typeof data.lastOrderNum === 'number') config.lastOrderNum = data.lastOrderNum;
+            if (typeof data.dayStartedAt === 'string') config.dayStartedAt = data.dayStartedAt;
+            restauroPedidos = true;
+          }
+        }
+
+        Store.saveConfig(config);
         currentCat = menu.categories[0] ? menu.categories[0].id : null;
         closeModal();
         renderPedido();
         renderMenuEditor();
-        toast('Menú restaurado ✅');
+        renderCierre();
+        toast(restauroPedidos ? 'Menú y pedidos restaurados ✅' : 'Menú restaurado ✅');
       } catch (e) {
         alert('Ese archivo no es un respaldo válido de la app.');
       }
@@ -569,7 +593,7 @@
         <label class="btn-ghost file-btn">⬆️ Restaurar desde archivo
           <input type="file" id="cfg-import" accept="application/json,.json" hidden>
         </label>
-        <p class="hint">Guarda tus precios y ajustes en un archivo para pasarlos a otro celular si cambias de equipo.</p>
+        <p class="hint">Guarda tu menú, precios <b>y los pedidos del día</b> en un archivo. Sirve para pasar el menú a otro celular o como red de seguridad de la jornada.</p>
       </div>
 
       <button class="btn-ghost danger" id="cfg-reset">Restaurar menú original</button>`;
