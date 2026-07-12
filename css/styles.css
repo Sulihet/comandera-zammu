@@ -121,10 +121,26 @@ main { max-width: 640px; margin: 0 auto; }
 .close-row .q { font-weight: 800; color: var(--accent-ink); min-width: 34px; }
 .close-name { flex: 1; font-size: 14px; }
 .close-row span:last-child { font-weight: 700; }
-.order-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--card); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; box-shadow: var(--shadow); }
-.order-row.canceled { opacity: .5; text-decoration: line-through; }
 .order-sum { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .tag { font-size: 12px; color: var(--danger); font-weight: 700; }
+
+/* tarjetas de pedido expandibles */
+.order-card { background: var(--card); border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow); overflow: hidden; }
+.order-card.canceled { opacity: .55; }
+.order-card.canceled .order-head strong { text-decoration: line-through; }
+.order-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
+.order-head strong { font-size: 15px; }
+.chevron { color: var(--accent-ink); font-size: 15px; flex: 0 0 auto; }
+.order-detail { padding: 0 12px 12px; border-top: 1px solid var(--line); }
+.detail-line { display: flex; gap: 8px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.detail-line:last-of-type { border-bottom: none; }
+.detail-line .q { font-weight: 800; color: var(--accent-ink); }
+.detail-line > span:last-child { margin-left: auto; font-weight: 700; }
+.detail-foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 4px; color: var(--muted); font-size: 14px; }
+.order-actions { display: flex; gap: 8px; margin-top: 10px; }
+.order-actions .btn-ghost { margin-top: 0; }
+
+.edit-banner { background: #fbf1d6; border: 1.5px solid var(--primary); color: var(--on-primary); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; font-weight: 700; }
 #btn-close-day { margin: 8px 0; }
 
 /* ---------- Nav inferior ---------- */

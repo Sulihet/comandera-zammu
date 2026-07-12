@@ -7,6 +7,7 @@
   let cart = Store.getCart();
   let config = Store.getConfig();
   let currentCat = menu.categories[0]?.id || null;
+  let editingNum = null; // nº del pedido que se está editando (corrección), o null
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -95,12 +96,25 @@
     }
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     $('#cart-total').textContent = money(total);
+
+    // banner de edición
+    const eb = $('#edit-banner');
+    if (eb) {
+      eb.hidden = editingNum == null;
+      if (editingNum != null) eb.textContent = `✏️ Editando pedido #${editingNum} — ajusta y vuelve a enviar`;
+    }
+
     const btn = $('#btn-send');
     btn.disabled = !cart.length;
-    // el texto avisa si el pedido irá a cocina o solo se guardará
-    btn.textContent = (cart.length && !orderHasKitchen(cart))
-      ? '💾 Guardar pedido (no va a cocina)'
-      : '📲 Enviar a cocina (WhatsApp)';
+    // el texto avisa qué pasará al tocarlo
+    const hasK = orderHasKitchen(cart);
+    if (!cart.length) {
+      btn.textContent = '📲 Enviar a cocina (WhatsApp)';
+    } else if (editingNum != null) {
+      btn.textContent = hasK ? '📲 Reenviar corrección a cocina' : '💾 Guardar corrección (no va a cocina)';
+    } else {
+      btn.textContent = hasK ? '📲 Enviar a cocina (WhatsApp)' : '💾 Guardar pedido (no va a cocina)';
+    }
     renderServiceMode();
   }
 
@@ -215,7 +229,7 @@
     const d = new Date(order.ts);
     const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
-    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}* · ${hora}\n*${modeLabel}*\n`;
+    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}* · ${hora}\n*${modeLabel}*\n`;
 
     // solo las líneas de categorías que cocina prepara
     const groups = {};
@@ -247,10 +261,18 @@
 
   function sendOrder() {
     if (!cart.length) return;
-    config.lastOrderNum = (config.lastOrderNum || 0) + 1;
+    const corrected = editingNum != null;
+    let num;
+    if (corrected) {
+      num = editingNum; // reutiliza el número original
+    } else {
+      config.lastOrderNum = (config.lastOrderNum || 0) + 1;
+      num = config.lastOrderNum;
+    }
     const order = {
-      id: uid(), num: config.lastOrderNum, ts: Date.now(),
+      id: uid(), num, ts: Date.now(),
       serviceMode: config.serviceMode || 'aqui',
+      corrected,
       lines: Store.clone(cart),
       total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
       canceled: false,
@@ -260,18 +282,19 @@
     Store.saveOrders(orders);
     Store.saveConfig(config);
 
-    // limpia carrito
+    // limpia carrito y estado de edición
     cart = [];
     Store.saveCart(cart);
+    editingNum = null;
     renderCart();
 
     // el pedido YA quedó guardado y contará en el cierre del día.
     // Solo se envía a cocina si incluye algo que ellos preparan.
     if (orderHasKitchen(order.lines)) {
       shareToKitchen(buildWhatsappText(order));
-      toast(`Pedido #${order.num} enviado a cocina ✅`);
+      toast(corrected ? `Corrección del #${order.num} enviada ✅` : `Pedido #${order.num} enviado a cocina ✅`);
     } else {
-      toast(`Pedido #${order.num} guardado ✅ (no va a cocina)`);
+      toast(corrected ? `Corrección del #${order.num} guardada ✅` : `Pedido #${order.num} guardado ✅ (no va a cocina)`);
     }
   }
 
@@ -358,18 +381,45 @@
       <h3>Vendido por platillo</h3>
       ${rows || '<p class="empty">Todavía no hay ventas hoy.</p>'}`;
 
-    // pedidos de hoy (para anular)
+    // pedidos de hoy (tocar para desglosar; editar o anular)
     const allOrders = Store.getOrders();
     $('#today-orders').innerHTML = allOrders.length ? allOrders.slice().reverse().map((o) => {
       const d = new Date(o.ts);
       const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       const resumen = o.lines.map((l) => `${l.qty}× ${l.name}`).join(', ');
-      return `<div class="order-row ${o.canceled ? 'canceled' : ''}">
+      const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+
+      const detailLines = o.lines.map((l) => `
+        <div class="detail-line">
+          <span class="q">${l.qty}×</span>
           <div>
-            <strong>#${o.num}</strong> · ${hora} · ${money(o.total)}
-            <div class="order-sum">${esc(resumen)}</div>
+            <div class="cart-name">${esc(l.name)}</div>
+            ${l.detail ? `<div class="cart-detail">${esc(l.detail)}</div>` : ''}
+            ${(l.extras && l.extras.length) ? `<div class="cart-detail">➕ ${esc(l.extras.join(', '))}</div>` : ''}
+            ${l.notes ? `<div class="cart-note">📝 ${esc(l.notes)}</div>` : ''}
           </div>
-          ${o.canceled ? '<span class="tag">Anulado</span>' : `<button class="link-danger" data-cancel="${o.id}">Anular</button>`}
+          <span>${money(l.unitPrice * l.qty)}</span>
+        </div>`).join('');
+
+      return `<div class="order-card ${o.canceled ? 'canceled' : ''}">
+          <div class="order-head" data-toggle="${o.id}">
+            <div>
+              <strong>#${o.num}</strong> ${o.corrected ? '✏️' : ''} · ${hora} · ${modeIcon} · ${money(o.total)}
+              <div class="order-sum">${esc(resumen)}</div>
+            </div>
+            <span class="chevron">▸</span>
+          </div>
+          <div class="order-detail" data-detail="${o.id}" hidden>
+            ${detailLines}
+            <div class="detail-foot">
+              <span>${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
+              <strong>Total ${money(o.total)}</strong>
+            </div>
+            ${o.canceled ? '<div class="tag">Anulado</div>' : `<div class="order-actions">
+              <button class="btn-ghost" data-edit="${o.id}">✏️ Editar</button>
+              <button class="btn-ghost danger" data-cancel="${o.id}">Anular</button>
+            </div>`}
+          </div>
         </div>`;
     }).join('') : '<p class="empty">Sin pedidos aún.</p>';
   }
@@ -383,6 +433,23 @@
     Store.saveOrders(orders);
     renderCierre();
     toast(`Pedido #${o.num} anulado`);
+  }
+
+  function editOrder(id) {
+    if (cart.length) { alert('Tienes un pedido en curso. Envíalo o quítalo antes de editar otro.'); return; }
+    const orders = Store.getOrders();
+    const o = orders.find((x) => x.id === id);
+    if (!o || o.canceled) return;
+    if (!confirm(`¿Editar el pedido #${o.num}? Se cargará para modificarlo y lo vuelves a enviar como corrección.`)) return;
+    // carga las líneas al carrito y quita el original (se re-guardará con el mismo número al reenviar)
+    cart = Store.clone(o.lines);
+    Store.saveCart(cart);
+    config.serviceMode = o.serviceMode || 'aqui';
+    Store.saveConfig(config);
+    editingNum = o.num;
+    Store.saveOrders(orders.filter((x) => x.id !== id));
+    switchView('pedido');
+    toast(`Editando pedido #${o.num}: ajusta y vuelve a enviar`);
   }
 
   function closeDay() {
@@ -613,10 +680,22 @@
       }
     });
 
-    // cierre
+    // cierre: desglosar (toggle), editar y anular
     $('#cierre-summary').closest('.view').addEventListener('click', (e) => {
+      const toggle = e.target.closest('[data-toggle]');
+      const edit = e.target.closest('[data-edit]');
       const cancel = e.target.closest('[data-cancel]');
-      if (cancel) cancelOrder(cancel.dataset.cancel);
+      if (edit) { editOrder(edit.dataset.edit); return; }
+      if (cancel) { cancelOrder(cancel.dataset.cancel); return; }
+      if (toggle) {
+        const card = toggle.closest('.order-card');
+        const detail = card.querySelector('[data-detail]');
+        const chevron = toggle.querySelector('.chevron');
+        const open = detail.hidden;
+        detail.hidden = !open;
+        card.classList.toggle('open', open);
+        if (chevron) chevron.textContent = open ? '▾' : '▸';
+      }
     });
     $('#btn-close-day').onclick = closeDay;
   }

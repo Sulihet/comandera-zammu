@@ -99,6 +99,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   = variant con/sin papas. El editor de menú edita nombres, precios y disponibilidad.
 - **Cierre agrupa por `nombre + detalle`**: así se ve cuántas de cada variante se
   vendieron (ej. "Banderilla (Queso · Cheddar)").
+- **Pedidos de hoy = tarjetas expandibles**: tocar el encabezado despliega el detalle
+  completo (líneas, extras, notas, modo). Ver `renderCierre()` y el toggle en `bind()`.
+- **Editar pedido enviado** (`editOrder()`): recarga las líneas al carrito, quita el
+  original y fija `editingNum`. Al reenviar, `sendOrder()` reutiliza el número, marca
+  `corrected` y el mensaje sale como "✏️ CORRECCIÓN". El cierre no se duplica.
 - **Extras = multi-selección** (`item.extras[]` con `priceDelta`, Set en la hoja);
   distinto de `choices` (radio). Los extras suman al precio y salen en línea `➕`.
   Sus precios son **editables en la sección Menú** (inputs `data-xprice="item:extra"`).
