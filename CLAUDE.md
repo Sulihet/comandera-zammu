@@ -102,7 +102,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Cierre agrupa por `nombre + detalle`**: así se ve cuántas de cada variante se
   vendieron (ej. "Banderilla (Queso · Cheddar)").
 - **Pedidos de hoy = tarjetas expandibles**: tocar el encabezado despliega el detalle
-  completo (líneas, extras, notas, modo). Ver `renderCierre()` y el toggle en `bind()`.
+  completo (líneas, extras, notas, modo). Ver `renderCierre()` y `toggleCard()`.
+- **Historial de días cerrados** (4ª pestaña 📚): `closeDay()` guarda cada cierre en
+  `Store.closes` con `{date, closedAt, orderCount, grandTotal, totals:{qty,money}, orders}`
+  (detalle completo). `renderHistorial()` los muestra expandibles. Tolera cierres viejos
+  donde `totals` era solo cantidad (número).
 - **Editar pedido enviado** (`editOrder()`): recarga las líneas al carrito, quita el
   original y fija `editingNum`. Al reenviar, `sendOrder()` reutiliza el número, marca
   `corrected` y el mensaje sale como "✏️ CORRECCIÓN". El cierre no se duplica.

@@ -456,18 +456,29 @@
     const orders = Store.getOrders();
     const active = orders.filter((o) => !o.canceled);
     if (!active.length) { toast('No hay ventas para cerrar.'); return; }
-    if (!confirm('¿Cerrar el día? Se guardará el resumen y se vaciarán los pedidos para empezar de nuevo.')) return;
+    if (!confirm('¿Cerrar el día? Quedará guardado en el 📚 Historial y se vaciarán los pedidos para empezar de nuevo.')) return;
 
+    // desglose por platillo con cantidad y dinero
     const totals = {};
     let grand = 0;
     active.forEach((o) => o.lines.forEach((l) => {
       const key = l.name + (l.detail ? ` (${l.detail})` : '');
-      totals[key] = (totals[key] || 0) + l.qty;
+      if (!totals[key]) totals[key] = { qty: 0, money: 0 };
+      totals[key].qty += l.qty;
+      totals[key].money += l.unitPrice * l.qty;
       grand += l.unitPrice * l.qty;
     }));
 
     const closes = Store.getCloses();
-    closes.push({ date: Store.todayStr(), closedAt: Date.now(), orderCount: active.length, grandTotal: grand, totals });
+    closes.push({
+      id: uid(),
+      date: Store.todayStr(),
+      closedAt: Date.now(),
+      orderCount: active.length,
+      grandTotal: grand,
+      totals,                          // { "platillo": {qty, money} }
+      orders: Store.clone(active),     // detalle completo para consultar después
+    });
     Store.saveCloses(closes);
 
     Store.saveOrders([]);
@@ -475,7 +486,71 @@
     config.dayStartedAt = Store.todayStr();
     Store.saveConfig(config);
     renderCierre();
-    toast('Día cerrado ✅');
+    renderHistorial();
+    toast('Día cerrado y guardado en Historial ✅');
+  }
+
+  // expande/colapsa una tarjeta (.order-card) desde su encabezado
+  function toggleCard(headEl) {
+    const card = headEl.closest('.order-card');
+    if (!card) return;
+    const detail = card.querySelector('.order-detail');
+    const chevron = headEl.querySelector('.chevron');
+    const open = detail.hidden;
+    detail.hidden = !open;
+    if (chevron) chevron.textContent = open ? '▾' : '▸';
+  }
+
+  // ==========================================================
+  //  VISTA: HISTORIAL (días cerrados)
+  // ==========================================================
+  function fmtDate(ymd) {
+    const p = String(ymd || '').split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : (ymd || '');
+  }
+
+  function renderHistorial() {
+    const closes = Store.getCloses();
+    const box = $('#historial-list');
+    if (!closes.length) { box.innerHTML = '<p class="empty">Aún no hay días cerrados. Se guardarán aquí al usar “Cerrar día”.</p>'; return; }
+
+    box.innerHTML = closes.slice().reverse().map((c) => {
+      // desglose por platillo (compatible con cierres viejos donde totals era solo cantidad)
+      const rows = Object.entries(c.totals || {})
+        .map(([name, v]) => {
+          const qty = typeof v === 'number' ? v : v.qty;
+          const mon = typeof v === 'number' ? null : v.money;
+          return { name, qty, mon };
+        })
+        .sort((a, b) => (b.mon || 0) - (a.mon || 0))
+        .map((r) => `<div class="close-row"><span class="q">${r.qty}×</span><span class="close-name">${esc(r.name)}</span>${r.mon != null ? `<span>${money(r.mon)}</span>` : ''}</div>`)
+        .join('');
+
+      // detalle de pedidos (si el cierre lo guardó)
+      const ordersHtml = Array.isArray(c.orders) && c.orders.length ? `
+        <h4 class="detail-h">Pedidos (${c.orders.length})</h4>
+        ${c.orders.map((o) => {
+          const d = new Date(o.ts);
+          const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+          const lines = o.lines.map((l) => `<div class="hist-line">• ${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}${(l.extras && l.extras.length) ? ` ➕ ${esc(l.extras.join(', '))}` : ''}${l.notes ? ` 📝 ${esc(l.notes)}` : ''}</div>`).join('');
+          return `<div class="hist-order"><div class="hist-order-head">#${o.num}${o.corrected ? ' ✏️' : ''} · ${hora} · ${modeIcon} · ${money(o.total)}</div>${lines}</div>`;
+        }).join('')}` : '<p class="hint">Este día se cerró con una versión anterior: se guardó el resumen, sin el detalle de cada pedido.</p>';
+
+      return `<div class="order-card">
+          <div class="order-head" data-htoggle="${c.id || c.closedAt}">
+            <div>
+              <strong>${fmtDate(c.date)}</strong> · ${money(c.grandTotal || 0)} · ${c.orderCount || 0} pedidos
+            </div>
+            <span class="chevron">▸</span>
+          </div>
+          <div class="order-detail" hidden>
+            <h4 class="detail-h">Vendido por platillo</h4>
+            ${rows || '<p class="empty">Sin desglose.</p>'}
+            ${ordersHtml}
+          </div>
+        </div>`;
+    }).join('');
   }
 
   // ==========================================================
@@ -622,6 +697,7 @@
     if (view === 'pedido') renderPedido();
     if (view === 'menu') renderMenuEditor();
     if (view === 'cierre') renderCierre();
+    if (view === 'historial') renderHistorial();
   }
 
   function bind() {
@@ -711,17 +787,15 @@
       const cancel = e.target.closest('[data-cancel]');
       if (edit) { editOrder(edit.dataset.edit); return; }
       if (cancel) { cancelOrder(cancel.dataset.cancel); return; }
-      if (toggle) {
-        const card = toggle.closest('.order-card');
-        const detail = card.querySelector('[data-detail]');
-        const chevron = toggle.querySelector('.chevron');
-        const open = detail.hidden;
-        detail.hidden = !open;
-        card.classList.toggle('open', open);
-        if (chevron) chevron.textContent = open ? '▾' : '▸';
-      }
+      if (toggle) toggleCard(toggle);
     });
     $('#btn-close-day').onclick = closeDay;
+
+    // historial: expandir un día cerrado
+    $('#view-historial').addEventListener('click', (e) => {
+      const h = e.target.closest('[data-htoggle]');
+      if (h) toggleCard(h);
+    });
   }
 
   // ---------- Arranque ----------

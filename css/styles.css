@@ -141,6 +141,14 @@ main { max-width: 640px; margin: 0 auto; }
 .order-actions .btn-ghost { margin-top: 0; }
 
 .edit-banner { background: #fbf1d6; border: 1.5px solid var(--primary); color: var(--on-primary); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; font-weight: 700; }
+
+/* historial */
+.detail-h { font-size: 13px; margin: 12px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+.detail-h:first-child { margin-top: 4px; }
+.hist-order { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.hist-order:last-child { border-bottom: none; }
+.hist-order-head { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.hist-line { font-size: 13px; color: var(--ink); padding-left: 4px; }
 #btn-close-day { margin: 8px 0; }
 
 /* ---------- Nav inferior ---------- */
@@ -150,7 +158,7 @@ main { max-width: 640px; margin: 0 auto; }
   padding-bottom: var(--safe-b); box-shadow: 0 -2px 12px rgba(0,0,0,.05);
 }
 .nav-btn { flex: 1; border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 600; padding: 8px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.nav-btn span { font-size: 20px; }
+.nav-btn span { font-size: 19px; }
 .nav-btn.active { color: var(--accent-ink); }
 
 /* ---------- Modal / Sheet ---------- */
