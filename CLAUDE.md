@@ -156,6 +156,13 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   sale si el pedido incluye alguna categoría de cocina. Si es solo bebidas/banderillas,
   no se envía (el botón cambia a "Guardar pedido (no va a cocina)"). Ver `sendOrder()` y
   `orderHasKitchen()`.
+- **Reenvío en correcciones = solo si cambió cocina**: al editar, se guarda `kitchenSig()`
+  del pedido original; al reenviar, solo se manda el WhatsApp si la firma de cocina cambió
+  (se sumó/quitó/modificó Fast Food/Coreano/Pan). Sumar/quitar banderillas o bebidas
+  actualiza la orden pero NO reenvía. Ver `editingKitchenSig` y `sendOrder()`.
+- **Mensaje a cocina — "Con todo" y "Extra"**: una hamburguesa sin nota se marca
+  `🍔 Con todo`; los extras salen como `Extra <nombre>` (sin duplicar si el nombre ya
+  incluye "extra", ej. "Carne extra"). Ver `renderLine()` en `buildWhatsappText()`.
 - **Logo real en el encabezado**: `<img class="brand-logo" src="icon.png">` (no emoji).
 - **Envío a un GRUPO de WhatsApp** (elección del usuario): `sendOrder()` usa la Web Share
   API (`navigator.share`) para abrir WhatsApp con el pedido ya escrito y que el mesero

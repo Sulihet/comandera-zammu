@@ -8,6 +8,7 @@
   let config = Store.getConfig();
   let currentCat = menu.categories[0]?.id || null;
   let editingNum = null; // nº del pedido que se está editando (corrección), o null
+  let editingKitchenSig = null; // firma de las líneas de cocina del pedido original (para detectar cambios)
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -18,6 +19,16 @@
   // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
   const KITCHEN_CATS = ['fastfood', 'coreano', 'baos'];
   const orderHasKitchen = (lines) => lines.some((l) => KITCHEN_CATS.includes(l.cat));
+
+  // firma de las líneas de cocina; sirve para saber si una corrección cambió
+  // algo que cocina prepara (y así decidir si se reenvía el WhatsApp).
+  function kitchenSig(lines) {
+    return lines
+      .filter((l) => KITCHEN_CATS.includes(l.cat))
+      .map((l) => `${l.name}|${l.detail || ''}|${(l.extras || []).slice().sort().join(',')}|${(l.notes || '').trim()}|${l.qty}`)
+      .sort()
+      .join('||');
+  }
 
   // Estado del pedido en la lista de Cierre (solo control visual, no toca dinero).
   // 2 valores: al enviarse nace "En preparación" y con un toque alterna a "Entregado".
@@ -251,11 +262,17 @@
       groups[l.cat].push(l);
     });
 
+    // antepone "Extra" al extra, salvo que el nombre ya lo incluya (ej. "Carne extra")
+    const extraLabel = (n) => (/extra/i.test(n) ? n : `Extra ${n}`);
     const renderLine = (l) => {
       let s = `• ${l.qty}× ${l.name}`;
       if (l.detail) s += ` — ${l.detail}`;
       s += `\n`;
-      if (l.extras && l.extras.length) s += `   ➕ ${l.extras.join(', ')}\n`;
+      const esHamburguesa = /hamburgues/i.test(l.name);
+      const tieneNota = !!(l.notes && l.notes.trim());
+      // hamburguesa sin comentarios = con todo (así se avisa a cocina)
+      if (esHamburguesa && !tieneNota) s += `   🍔 Con todo\n`;
+      if (l.extras && l.extras.length) s += `   ➕ ${l.extras.map(extraLabel).join(', ')}\n`;
       if (l.notes) s += `   📝 ${l.notes}\n`;
       return s;
     };
@@ -304,19 +321,26 @@
     config.customerName = ''; // limpia el nombre para el siguiente pedido
     Store.saveConfig(config);
 
+    // ¿(re)enviar a cocina? En una corrección, SOLO si cambió algo de lo que
+    // cocina prepara (Fast Food / Coreano / Pan). Sumar o quitar banderillas o
+    // bebidas actualiza la orden pero no reenvía el mensaje.
+    const kitchenChanged = !corrected || (kitchenSig(order.lines) !== editingKitchenSig);
+    const sendKitchen = orderHasKitchen(order.lines) && kitchenChanged;
+
     // limpia carrito y estado de edición
     cart = [];
     Store.saveCart(cart);
     editingNum = null;
+    editingKitchenSig = null;
     renderCart();
 
-    // el pedido YA quedó guardado y contará en el cierre del día.
-    // Solo se envía a cocina si incluye algo que ellos preparan.
-    if (orderHasKitchen(order.lines)) {
+    if (sendKitchen) {
       shareToKitchen(buildWhatsappText(order));
-      toast(corrected ? `Corrección del #${order.num} enviada ✅` : `Pedido #${order.num} enviado a cocina ✅`);
+      toast(corrected ? `Corrección del #${order.num} enviada a cocina ✅` : `Pedido #${order.num} enviado a cocina ✅`);
+    } else if (corrected) {
+      toast(`Pedido #${order.num} actualizado ✅ (sin cambios para cocina)`);
     } else {
-      toast(corrected ? `Corrección del #${order.num} guardada ✅` : `Pedido #${order.num} guardado ✅ (no va a cocina)`);
+      toast(`Pedido #${order.num} guardado ✅ (no va a cocina)`);
     }
   }
 
@@ -554,6 +578,7 @@
     config.customerName = o.customerName || ''; // recarga el nombre para poder editarlo
     Store.saveConfig(config);
     editingNum = o.num;
+    editingKitchenSig = kitchenSig(o.lines); // recuerda cómo estaba la parte de cocina
     Store.saveOrders(orders.filter((x) => x.id !== id));
     switchView('pedido');
     toast(`Editando pedido #${o.num}: ajusta y vuelve a enviar`);
