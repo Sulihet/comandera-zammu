@@ -71,6 +71,7 @@ main { max-width: 640px; margin: 0 auto; }
 
 /* ---------- Carrito ---------- */
 .cart { margin-top: 18px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; }
+.cart .field { margin-bottom: 12px; }
 .service-mode { display: flex; gap: 8px; margin-bottom: 12px; }
 .seg { flex: 1; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); padding: 11px 8px; border-radius: 12px; font-weight: 700; font-size: 14px; }
 .seg.active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }

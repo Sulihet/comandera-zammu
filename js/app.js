@@ -126,6 +126,8 @@
       btn.textContent = hasK ? '📲 Enviar a cocina (WhatsApp)' : '💾 Guardar pedido (no va a cocina)';
     }
     renderServiceMode();
+    const nm = $('#customer-name');
+    if (nm) nm.value = config.customerName || '';
   }
 
   function renderServiceMode() {
@@ -239,7 +241,7 @@
     const d = new Date(order.ts);
     const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
-    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}* · ${hora}\n*${modeLabel}*\n`;
+    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}${order.customerName ? ' — 👤 ' + order.customerName : ''}* · ${hora}\n*${modeLabel}*\n`;
 
     // solo las líneas de categorías que cocina prepara
     const groups = {};
@@ -271,6 +273,13 @@
 
   function sendOrder() {
     if (!cart.length) return;
+    // el nombre del cliente es obligatorio: sin él no se envía ni se guarda
+    const customerName = (config.customerName || '').trim();
+    if (!customerName) {
+      toast('Escribe el nombre del cliente');
+      const nm = $('#customer-name'); if (nm) nm.focus();
+      return;
+    }
     const corrected = editingNum != null;
     let num;
     if (corrected) {
@@ -287,10 +296,12 @@
       total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
       canceled: false,
       status: 'preparacion', // nace "En preparación" al enviarse a cocina
+      customerName,
     };
     const orders = Store.getOrders();
     orders.push(order);
     Store.saveOrders(orders);
+    config.customerName = ''; // limpia el nombre para el siguiente pedido
     Store.saveConfig(config);
 
     // limpia carrito y estado de edición
@@ -358,7 +369,8 @@
         const d = new Date(o.ts);
         const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         const mode = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
-        t += `\n*#${o.num}${o.corrected ? ' ✏️' : ''}* · ${hora} · ${mode} · ${money(o.total)}\n`;
+        const cli = o.customerName ? ` · 👤 ${o.customerName}` : '';
+        t += `\n*#${o.num}${o.corrected ? ' ✏️' : ''}*${cli} · ${hora} · ${mode} · ${money(o.total)}\n`;
         o.lines.forEach((l) => {
           t += `   • ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''}`;
           if (l.extras && l.extras.length) t += ` ➕ ${l.extras.join(', ')}`;
@@ -467,6 +479,7 @@
       const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       const resumen = o.lines.map((l) => `${l.qty}× ${l.name}`).join(', ');
       const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+      const cliente = esc(o.customerName || '—');
       const st = statusOf(o);
       const statusChip = o.canceled ? '' :
         `<button class="order-status ${STATUS_META[st].cls}" data-status="${o.id}">${STATUS_META[st].label}</button>`;
@@ -486,7 +499,7 @@
       return `<div class="order-card ${o.canceled ? 'canceled' : STATUS_META[st].cls}">
           <div class="order-head" data-toggle="${o.id}">
             <div>
-              <strong>#${o.num}</strong> ${o.corrected ? '✏️' : ''} · ${hora} · ${modeIcon} · ${money(o.total)}
+              <strong>#${o.num}</strong> ${o.corrected ? '✏️' : ''} · 👤 ${cliente} · ${hora} · ${modeIcon} · ${money(o.total)}
               <div class="order-sum">${esc(resumen)}</div>
             </div>
             ${statusChip}
@@ -495,7 +508,7 @@
           <div class="order-detail" data-detail="${o.id}" hidden>
             ${detailLines}
             <div class="detail-foot">
-              <span>${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
+              <span>👤 ${cliente} · ${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
               <strong>Total ${money(o.total)}</strong>
             </div>
             ${o.canceled ? '<div class="tag">Anulado</div>' : `<div class="order-actions">
@@ -538,6 +551,7 @@
     cart = Store.clone(o.lines);
     Store.saveCart(cart);
     config.serviceMode = o.serviceMode || 'aqui';
+    config.customerName = o.customerName || ''; // recarga el nombre para poder editarlo
     Store.saveConfig(config);
     editingNum = o.num;
     Store.saveOrders(orders.filter((x) => x.id !== id));
@@ -626,8 +640,9 @@
           const d = new Date(o.ts);
           const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
           const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+          const cli = o.customerName ? ` · 👤 ${esc(o.customerName)}` : '';
           const lines = o.lines.map((l) => `<div class="hist-line">• ${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}${(l.extras && l.extras.length) ? ` ➕ ${esc(l.extras.join(', '))}` : ''}${l.notes ? ` 📝 ${esc(l.notes)}` : ''}</div>`).join('');
-          return `<div class="hist-order"><div class="hist-order-head">#${o.num}${o.corrected ? ' ✏️' : ''} · ${hora} · ${modeIcon} · ${money(o.total)}</div>${lines}</div>`;
+          return `<div class="hist-order"><div class="hist-order-head">#${o.num}${o.corrected ? ' ✏️' : ''}${cli} · ${hora} · ${modeIcon} · ${money(o.total)}</div>${lines}</div>`;
         }).join('')}` : '<p class="hint">Este día se cerró con una versión anterior: se guardó el resumen, sin el detalle de cada pedido.</p>';
 
       return `<div class="order-card">
@@ -820,6 +835,10 @@
       renderCart();
     };
     $('#btn-send').onclick = sendOrder;
+    $('#customer-name').oninput = (e) => {
+      config.customerName = e.target.value;
+      Store.saveConfig(config);
+    };
     $('#service-mode').onclick = (e) => {
       const b = e.target.closest('[data-mode]');
       if (!b) return;
