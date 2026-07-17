@@ -469,32 +469,58 @@
   // ==========================================================
   //  VISTA: CIERRE DEL DÍA
   // ==========================================================
+  // agrupa un platillo en un "concepto general" para el Cierre
+  function conceptOf(l) {
+    const cat = l.cat;
+    if (cat === 'salada' || cat === 'dulce') return { key: 'banderillas', label: 'Banderillas', icon: '🍢', order: 2 };
+    if (cat === 'coreano') return { key: 'coreano', label: 'Coreano', icon: '🍜', order: 3 };
+    if (cat === 'bebidas') return { key: 'bebidas', label: 'Bebidas', icon: '🥤', order: 5 };
+    if (cat === 'baos') return { key: 'baos', label: 'Pan al vapor', icon: '🥟', order: 6 };
+    if (cat === 'fastfood') {
+      if (/hot\s*dog/i.test(l.name)) return { key: 'hotdogs', label: 'Hot-dogs', icon: '🌭', order: 4 };
+      return { key: 'hamburguesas', label: 'Hamburguesas', icon: '🍔', order: 1 };
+    }
+    return { key: 'otros', label: 'Otros', icon: '🍽️', order: 9 };
+  }
+
   function renderCierre() {
     const orders = Store.getOrders().filter((o) => !o.canceled);
-    const totals = {};
+
+    // agrupa: concepto general -> { qty, money, items: { platillo: {qty,money} } }
+    const concepts = {};
     let grand = 0;
-    orders.forEach((o) => {
-      o.lines.forEach((l) => {
-        const key = l.name + (l.detail ? ` (${l.detail})` : '');
-        if (!totals[key]) totals[key] = { qty: 0, money: 0 };
-        totals[key].qty += l.qty;
-        totals[key].money += l.unitPrice * l.qty;
-        grand += l.unitPrice * l.qty;
-      });
-    });
+    orders.forEach((o) => o.lines.forEach((l) => {
+      const c = conceptOf(l);
+      const m = l.unitPrice * l.qty;
+      grand += m;
+      if (!concepts[c.key]) concepts[c.key] = { label: c.label, icon: c.icon, order: c.order, qty: 0, money: 0, items: {} };
+      const g = concepts[c.key];
+      g.qty += l.qty; g.money += m;
+      const ik = l.name + (l.detail ? ` (${l.detail})` : '');
+      if (!g.items[ik]) g.items[ik] = { qty: 0, money: 0 };
+      g.items[ik].qty += l.qty; g.items[ik].money += m;
+    }));
 
-    const rows = Object.entries(totals)
-      .sort((a, b) => b[1].money - a[1].money)
-      .map(([name, t]) => `<div class="close-row"><span class="q">${t.qty}×</span><span class="close-name">${esc(name)}</span><span>${money(t.money)}</span></div>`)
-      .join('');
-
-    $('#cierre-summary').innerHTML = `
+    // números grandes arriba
+    $('#cierre-head').innerHTML = `
       <div class="close-head">
         <div><span class="big-num">${orders.length}</span><small>pedidos hoy</small></div>
         <div><span class="big-num">${money(grand)}</span><small>total del día</small></div>
-      </div>
-      <h3>Vendido por platillo</h3>
-      ${rows || '<p class="empty">Todavía no hay ventas hoy.</p>'}`;
+      </div>`;
+
+    // ventas por concepto (tarjetas expandibles: concepto -> platillos)
+    const conceptCards = Object.values(concepts).sort((a, b) => a.order - b.order).map((g) => {
+      const items = Object.entries(g.items).sort((a, b) => b[1].money - a[1].money)
+        .map(([name, v]) => `<div class="concept-item"><span class="q">${v.qty}×</span><span class="nm">${esc(name)}</span><span class="mn">${money(v.money)}</span></div>`).join('');
+      return `<div class="order-card">
+          <div class="order-head" data-toggle="c-${esc(g.label)}">
+            <div><strong>${g.icon} ${esc(g.label)}</strong> <span class="order-sum">${g.qty} vendido${g.qty === 1 ? '' : 's'}</span></div>
+            <div class="concept-right"><strong>${money(g.money)}</strong><span class="chevron">▸</span></div>
+          </div>
+          <div class="order-detail" hidden>${items}</div>
+        </div>`;
+    }).join('');
+    $('#cierre-summary').innerHTML = conceptCards || '<p class="empty">Todavía no hay ventas hoy.</p>';
 
     // pedidos de hoy (tocar para desglosar; editar o anular)
     const allOrders = Store.getOrders();

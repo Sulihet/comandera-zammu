@@ -91,7 +91,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
     (reemplaza el precio de la base, sin importar cuál base se elija).
 - **Banderillas Dulces** $60 c/u: Milky Way · Kinder Delice · Choco Roles.
 - **Coreano:** Ramen Zammu Waifuu $105 · Dumpling & Ramen (mitad/mitad) $100 ·
-  Dumplings (5 pzas) $70. Nivel de picante (Poco/Dos/Muy/Extremo), sin costo.
+  Dumplings (5 pzas) $70. **Tipo de sopa** (Habanero Limón / Queso / Carbonara, primero)
+  solo en Ramen y Dumpling & Ramen; luego nivel de picante (Poco/Dos/Muy/Extremo). Sin costo.
 - **Fast Food** (precios actualizados):
   - Hamburguesa Hawaiana $85 (con papas $95).
   - Hamburguesa Sencilla $75 (con papas $85).
@@ -132,6 +133,15 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   vendieron (ej. "Banderilla (Queso · Cheddar)").
 - **Pedidos de hoy = tarjetas expandibles**: tocar el encabezado despliega el detalle
   completo (líneas, extras, notas, modo). Ver `renderCierre()` y `toggleCard()`.
+- **Cierre ordenado**: primero "Pedidos de hoy", luego "Ventas por concepto" (los números
+  grandes van en `#cierre-head`). Ver `index.html` y `renderCierre()`.
+- **Ventas por concepto** (`conceptOf()`): agrupa las ventas en Hamburguesas, Banderillas
+  (salada+dulce), Coreano, Hot-dogs, Bebidas y Pan al vapor; cada concepto muestra cantidad
+  e ingreso y se expande a los platillos específicos. Fast Food se parte en Hamburguesas
+  vs Hot-dogs por el nombre.
+- **Migración de menú** (`migrateMenu()` en `store.js`): inyecta cambios estructurales
+  nuevos (ej. el "Tipo de sopa") a menús ya guardados en el celular, sin borrar precios ni
+  ediciones del usuario. Necesario porque el menú vive en localStorage.
 - **Resumen del día para el administrador** (`reportText()` + `shareText()`): texto
   legible con fecha, nº pedidos, total, **desglose por platillo con dinero** y
   **detalle de cada orden**. Se comparte por WhatsApp/correo. Botón en Cierre (día

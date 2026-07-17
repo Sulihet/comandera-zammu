@@ -63,17 +63,27 @@ const DEFAULT_MENU = {
     // ---- Coreano ----
     {
       id: 'ramen', cat: 'coreano', name: 'Ramen Zammu Waifuu', available: true, notes: true, price: 105,
-      choices: [{ id: 'picante', name: 'Picante', required: false, options: [
-        { id: 'poco', name: 'Poco picante' }, { id: 'dos', name: 'Dos picante' },
-        { id: 'muy', name: 'Muy picante' }, { id: 'extremo', name: 'Extremo picante' },
-      ] }],
+      choices: [
+        { id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+          { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
+        ] },
+        { id: 'picante', name: 'Picante', required: false, options: [
+          { id: 'poco', name: 'Poco picante' }, { id: 'dos', name: 'Dos picante' },
+          { id: 'muy', name: 'Muy picante' }, { id: 'extremo', name: 'Extremo picante' },
+        ] },
+      ],
     },
     {
       id: 'dumpling_ramen', cat: 'coreano', name: 'Dumpling & Ramen', available: true, notes: true, price: 100,
-      choices: [{ id: 'picante', name: 'Picante', required: false, options: [
-        { id: 'poco', name: 'Poco picante' }, { id: 'dos', name: 'Dos picante' },
-        { id: 'muy', name: 'Muy picante' }, { id: 'extremo', name: 'Extremo picante' },
-      ] }],
+      choices: [
+        { id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+          { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
+        ] },
+        { id: 'picante', name: 'Picante', required: false, options: [
+          { id: 'poco', name: 'Poco picante' }, { id: 'dos', name: 'Dos picante' },
+          { id: 'muy', name: 'Muy picante' }, { id: 'extremo', name: 'Extremo picante' },
+        ] },
+      ],
     },
     {
       id: 'dumplings', cat: 'coreano', name: 'Dumplings (5 pzas)', available: true, notes: true, price: 70,

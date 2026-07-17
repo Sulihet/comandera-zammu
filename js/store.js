@@ -19,10 +19,33 @@ const Store = (() => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  // Migraciones para menús ya guardados en el celular (cambios estructurales
+  // del código que deben aparecer sin borrar los precios/ediciones del usuario).
+  function migrateMenu(m) {
+    if (!m || !Array.isArray(m.items)) return false;
+    let changed = false;
+    // Tipo de sopa (Habanero Limón / Queso / Carbonara) antes del picante, en ramen y dumpling&ramen
+    const ensureSopa = (id) => {
+      const it = m.items.find((x) => x.id === id);
+      if (!it) return;
+      it.choices = it.choices || [];
+      if (!it.choices.some((ch) => ch.id === 'sopa')) {
+        it.choices.unshift({ id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+          { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
+        ] });
+        changed = true;
+      }
+    };
+    ensureSopa('ramen');
+    ensureSopa('dumpling_ramen');
+    return changed;
+  }
+
   // --- Menú ---
   function getMenu() {
     let m = load(K.menu, null);
-    if (!m) { m = clone(DEFAULT_MENU); save(K.menu, m); }
+    if (!m) { m = clone(DEFAULT_MENU); save(K.menu, m); return m; }
+    if (migrateMenu(m)) save(K.menu, m); // aplica cambios estructurales nuevos
     return m;
   }
   function saveMenu(m) { save(K.menu, m); }

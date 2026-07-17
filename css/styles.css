@@ -127,6 +127,14 @@ main { max-width: 640px; margin: 0 auto; }
 .order-sum { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .tag { font-size: 12px; color: var(--danger); font-weight: 700; }
 
+/* ventas por concepto (agrupado) */
+.concept-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.concept-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.concept-item:last-child { border-bottom: none; }
+.concept-item .q { font-weight: 800; color: var(--accent-ink); min-width: 32px; }
+.concept-item .nm { flex: 1; font-size: 14px; }
+.concept-item .mn { font-weight: 700; }
+
 /* tarjetas de pedido expandibles */
 .order-card { background: var(--card); border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow); overflow: hidden; }
 .order-card.canceled { opacity: .55; }
