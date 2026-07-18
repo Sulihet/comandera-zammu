@@ -185,6 +185,12 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   `🍔 Con todo`; los extras salen como `Extra <nombre>` (sin duplicar si el nombre ya
   incluye "extra", ej. "Carne extra"). Ver `renderLine()` en `buildWhatsappText()`.
 - **Logo real en el encabezado**: `<img class="brand-logo" src="icon.png">` (no emoji).
+- **Confirmación de envío a cocina + reenvío**: `shareToKitchen()` devuelve `true`/`false`
+  (false = el mesero canceló el share). `sendOrder()` guarda `order.kitchenSent` y, si es
+  false, muestra `alert` "no se envió a cocina". En "Pedidos de hoy", los pedidos con
+  `kitchenSent===false` llevan borde rojo + etiqueta "⚠️ No llegó a cocina · toca para
+  reenviar". **Todo** pedido de cocina tiene además botón **📲 Reenviar a cocina**
+  (`resendKitchen()`), que cubre el caso no detectable de "se envió al chat equivocado".
 - **Envío a un GRUPO de WhatsApp** (elección del usuario): `sendOrder()` usa la Web Share
   API (`navigator.share`) para abrir WhatsApp con el pedido ya escrito y que el mesero
   elija su grupo de cocina (se recomienda fijarlo/pin). WhatsApp no permite deep-link a

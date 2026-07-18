@@ -295,7 +295,7 @@
     return t; // sin total: cocina no necesita el monto
   }
 
-  function sendOrder() {
+  async function sendOrder() {
     if (!cart.length) return;
     // el nombre del cliente es obligatorio: sin él no se envía ni se guarda
     const customerName = (config.customerName || '').trim();
@@ -350,8 +350,13 @@
     renderCart();
 
     if (sendKitchen) {
-      shareToKitchen(buildWhatsappText(order));
-      toast(corrected ? `Corrección del #${order.num} enviada a cocina ✅` : `Pedido #${order.num} enviado a cocina ✅`);
+      const ok = await shareToKitchen(buildWhatsappText(order));
+      markKitchenSent(order.id, ok); // registra si llegó o no
+      if (ok) {
+        toast(corrected ? `Corrección del #${order.num} enviada a cocina ✅` : `Pedido #${order.num} enviado a cocina ✅`);
+      } else {
+        alert(`⚠️ El pedido #${order.num} NO se envió a cocina.\n\nQuedó guardado. Reenvíalo desde 💰 Cierre → "Pedidos de hoy" con el botón 📲 Reenviar a cocina.`);
+      }
     } else if (corrected) {
       toast(`Pedido #${order.num} actualizado ✅ (sin cambios para cocina)`);
     } else {
@@ -359,18 +364,38 @@
     }
   }
 
+  // Devuelve true si el pedido se compartió/abrió en WhatsApp; false si el usuario canceló.
   async function shareToKitchen(text) {
     // 1) Web Share: abre WhatsApp con el texto ya escrito y deja elegir el GRUPO de cocina
     if (navigator.share) {
-      try { await navigator.share({ text }); return; }
-      catch (e) { if (e && e.name === 'AbortError') return; } // el usuario canceló: no hacer nada
+      try { await navigator.share({ text }); return true; }
+      catch (e) { if (e && e.name === 'AbortError') return false; } // el usuario canceló
+      // otros errores del share: cae al respaldo
     }
     // 2) Respaldo: número directo si se configuró en Ajustes
     const num = (config.kitchenNumber || '').replace(/\D/g, '');
-    if (num) { window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank'); return; }
+    if (num) { window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank'); return true; }
     // 3) Último recurso: copiar al portapapeles para pegar en el grupo
-    try { await navigator.clipboard.writeText(text); toast('Pedido copiado: pégalo en tu grupo de cocina'); }
-    catch (e) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
+    try { await navigator.clipboard.writeText(text); toast('Pedido copiado: pégalo en tu grupo de cocina'); return true; }
+    catch (e) { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); return true; }
+  }
+
+  function markKitchenSent(id, ok) {
+    const orders = Store.getOrders();
+    const o = orders.find((x) => x.id === id);
+    if (o) { o.kitchenSent = ok; Store.saveOrders(orders); }
+  }
+
+  // Reenvía a cocina el WhatsApp de un pedido ya guardado (cancelado, chat equivocado, etc.)
+  async function resendKitchen(id) {
+    const orders = Store.getOrders();
+    const o = orders.find((x) => x.id === id);
+    if (!o || o.canceled) return;
+    if (!orderHasKitchen(o.lines)) { toast('Este pedido no lleva nada de cocina'); return; }
+    const ok = await shareToKitchen(buildWhatsappText(o));
+    markKitchenSent(id, ok);
+    renderCierre();
+    toast(ok ? `Pedido #${o.num} reenviado a cocina ✅` : '⚠️ No se envió — inténtalo de nuevo');
   }
 
   // ---------- Resumen del día (para enviar al administrador) ----------
@@ -549,6 +574,10 @@
       const st = statusOf(o);
       const statusChip = o.canceled ? '' :
         `<button class="order-status ${STATUS_META[st].cls}" data-status="${o.id}">${STATUS_META[st].label}</button>`;
+      const needsKitchen = !o.canceled && orderHasKitchen(o.lines);
+      const notSent = needsKitchen && o.kitchenSent === false; // se sabe que NO llegó
+      const notSentBadge = notSent
+        ? `<button class="not-sent" data-resend="${o.id}">⚠️ No llegó a cocina · toca para reenviar</button>` : '';
 
       const detailLines = o.lines.map((l) => `
         <div class="detail-line">
@@ -562,11 +591,12 @@
           <span>${money(l.unitPrice * l.qty)}</span>
         </div>`).join('');
 
-      return `<div class="order-card ${o.canceled ? 'canceled' : STATUS_META[st].cls}">
+      return `<div class="order-card ${o.canceled ? 'canceled' : (notSent ? 'not-sent-card' : STATUS_META[st].cls)}">
           <div class="order-head" data-toggle="${o.id}">
             <div>
               <strong>#${o.num}</strong> ${o.corrected ? '✏️' : ''} · 👤 ${cliente} · ${hora} · ${modeIcon} · ${money(o.total)}
               <div class="order-sum">${esc(resumen)}</div>
+              ${notSentBadge}
             </div>
             ${statusChip}
             <span class="chevron">▸</span>
@@ -577,10 +607,12 @@
               <span>👤 ${cliente} · ${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
               <strong>Total ${money(o.total)}</strong>
             </div>
-            ${o.canceled ? '<div class="tag">Cancelado</div>' : `<div class="order-actions">
-              <button class="act-btn act-edit" data-edit="${o.id}">✏️ Editar</button>
-              <button class="act-btn act-cancel" data-cancel="${o.id}">✖ Cancelar</button>
-            </div>`}
+            ${o.canceled ? '<div class="tag">Cancelado</div>' : `
+              ${needsKitchen ? `<button class="act-btn act-resend full" data-resend="${o.id}">📲 Reenviar a cocina</button>` : ''}
+              <div class="order-actions">
+                <button class="act-btn act-edit" data-edit="${o.id}">✏️ Editar</button>
+                <button class="act-btn act-cancel" data-cancel="${o.id}">✖ Cancelar</button>
+              </div>`}
           </div>
         </div>`;
     }).join('') : '<p class="empty">Sin pedidos aún.</p>';
@@ -987,10 +1019,12 @@
     // cierre: desglosar (toggle), editar y anular
     $('#cierre-summary').closest('.view').addEventListener('click', (e) => {
       const status = e.target.closest('[data-status]');
+      const resend = e.target.closest('[data-resend]');
       const toggle = e.target.closest('[data-toggle]');
       const edit = e.target.closest('[data-edit]');
       const cancel = e.target.closest('[data-cancel]');
-      if (status) { advanceStatus(status.dataset.status); return; } // no debe expandir la tarjeta
+      if (resend) { resendKitchen(resend.dataset.resend); return; } // no debe expandir la tarjeta
+      if (status) { advanceStatus(status.dataset.status); return; }
       if (edit) { editOrder(edit.dataset.edit); return; }
       if (cancel) { cancelOrder(cancel.dataset.cancel); return; }
       if (toggle) toggleCard(toggle);
