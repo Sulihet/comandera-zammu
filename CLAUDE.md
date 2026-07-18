@@ -133,8 +133,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   vendieron (ej. "Banderilla (Queso · Cheddar)").
 - **Pedidos de hoy = tarjetas expandibles**: tocar el encabezado despliega el detalle
   completo (líneas, extras, notas, modo). Ver `renderCierre()` y `toggleCard()`.
-- **Cierre ordenado**: primero "Pedidos de hoy", luego "Ventas por concepto" (los números
-  grandes van en `#cierre-head`). Ver `index.html` y `renderCierre()`.
+- **Cierre ordenado**: "Pedidos de hoy" → "Ventas por concepto" → "Cierre del día"
+  (números grandes en `#cierre-head`) + botones Enviar resumen / Cerrar día, al final.
+  Ver `index.html` y `renderCierre()`.
 - **Ventas por concepto** (`conceptOf()`): agrupa las ventas en Hamburguesas, Banderillas
   (salada+dulce), Coreano, Hot-dogs, Bebidas y Pan al vapor; cada concepto muestra cantidad
   e ingreso y se expande a los platillos específicos. Fast Food se parte en Hamburguesas
