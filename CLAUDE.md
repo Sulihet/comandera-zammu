@@ -168,6 +168,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   restaura el original sin cambios. Ver `renderCierre()` y el banner en `renderCart()`.
 - **Ventas por concepto — Papas**: Papas a la francesa es su propio concepto (`🍟 Papas`,
   detectado por nombre en fastfood), no se cuenta como Hamburguesa. Ver `conceptOf()`.
+- **Producto libre** (`openCustomSheet()`): botón en Pedido para agregar a la orden un
+  concepto + precio escritos a mano (dulces coreanos, bebidas, vasos, etc.). La línea usa
+  `itemId:'custom'`, `cat:'otros'`; cuenta en el total y en el Cierre bajo el concepto
+  `🛒 Otros`, y NO se envía a cocina (otros no está en `KITCHEN_CATS`).
 - **Papas a la francesa** también se inyecta a menús ya guardados vía `migrateMenu()`.
 - **Mensaje a WhatsApp agrupado por categoría** (título en negrita + emoji del menú)
   para que cada cocinero identifique su sección. Ver `buildWhatsappText()`. **Sin total**

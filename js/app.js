@@ -521,7 +521,7 @@
       if (/papas/i.test(l.name)) return { key: 'papas', label: 'Papas', icon: '🍟', order: 4.5 };
       return { key: 'hamburguesas', label: 'Hamburguesas', icon: '🍔', order: 1 };
     }
-    return { key: 'otros', label: 'Otros', icon: '🍽️', order: 9 };
+    return { key: 'otros', label: 'Otros', icon: '🛒', order: 9 };
   }
 
   function renderCierre() {
@@ -879,6 +879,64 @@
   // ==========================================================
   //  AJUSTES
   // ==========================================================
+  // Producto libre: concepto + precio escritos a mano (para lo que no está en el menú).
+  function openCustomSheet() {
+    let qty = 1;
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <h2>Producto libre</h2>
+      <p class="hint" style="margin-top:0">Para lo que no está en el menú (dulces coreanos, bebidas, vasos, etc.). No se manda a cocina.</p>
+      <div class="field">
+        <label>¿Qué es? <small>(concepto)</small></label>
+        <input type="text" id="cust-name" placeholder="ej. Dulce coreano, Bebida de leche, Vaso">
+      </div>
+      <div class="field">
+        <label>Precio</label>
+        <input type="number" id="cust-price" inputmode="numeric" placeholder="ej. 25">
+      </div>
+      <div class="field">
+        <label>Nota <small>(opcional)</small></label>
+        <input type="text" id="cust-notes" placeholder="detalle opcional">
+      </div>
+      <div class="field qty-field">
+        <label>Cantidad</label>
+        <div class="stepper">
+          <button data-cqty="-1">−</button><span id="cust-qty">1</span><button data-cqty="1">+</button>
+        </div>
+      </div>
+      <button class="btn-primary big" id="cust-add">Agregar</button>`;
+
+    const priceEl = () => $('#cust-price', body);
+    const updateBtn = () => {
+      const p = Number(priceEl().value) || 0;
+      $('#cust-add', body).textContent = p > 0 ? `Agregar · ${money(p * qty)}` : 'Agregar';
+    };
+    $$('[data-cqty]', body).forEach((b) => b.onclick = () => {
+      qty = Math.max(1, qty + Number(b.dataset.cqty));
+      $('#cust-qty', body).textContent = qty;
+      updateBtn();
+    });
+    priceEl().oninput = updateBtn;
+
+    $('#cust-add', body).onclick = () => {
+      const name = $('#cust-name', body).value.trim();
+      const raw = priceEl().value;
+      const price = Number(raw);
+      if (!name) { toast('Escribe el concepto'); return; }
+      if (raw === '' || !isFinite(price) || price < 0) { toast('Escribe un precio válido'); return; }
+      cart.push({
+        uid: uid(), itemId: 'custom', name, cat: 'otros',
+        detail: '', extras: [], unitPrice: price, qty,
+        notes: $('#cust-notes', body).value.trim(),
+      });
+      Store.saveCart(cart);
+      closeModal();
+      renderCart();
+      toast('Agregado al pedido');
+    };
+    showModal(body);
+  }
+
   function openSettings() {
     const body = document.createElement('div');
     body.innerHTML = `
@@ -950,6 +1008,7 @@
       const item = menu.items.find((i) => i.id === btn.dataset.item);
       if (item) openItemSheet(item);
     };
+    $('#btn-custom').onclick = openCustomSheet;
     $('#cart-lines').onclick = (e) => {
       const del = e.target.closest('[data-del]');
       if (!del) return;
