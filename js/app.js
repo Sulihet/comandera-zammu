@@ -9,6 +9,7 @@
   let currentCat = menu.categories[0]?.id || null;
   let editingNum = null; // nº del pedido que se está editando (corrección), o null
   let editingKitchenSig = null; // firma de las líneas de cocina del pedido original (para detectar cambios)
+  let editingOriginal = null; // copia íntegra del pedido en edición (para poder cancelar la edición)
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -118,11 +119,17 @@
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     $('#cart-total').textContent = money(total);
 
-    // banner de edición
+    // banner de edición (con opción de cancelar la edición)
     const eb = $('#edit-banner');
     if (eb) {
       eb.hidden = editingNum == null;
-      if (editingNum != null) eb.textContent = `✏️ Editando pedido #${editingNum} — ajusta y vuelve a enviar`;
+      if (editingNum != null) {
+        eb.innerHTML = `<span>✏️ Editando pedido #${editingNum} — ajusta y vuelve a enviar</span>
+          <button id="btn-cancel-edit" class="link-cancel-edit">✖ Cancelar edición</button>`;
+        const cb = $('#btn-cancel-edit'); if (cb) cb.onclick = cancelEdit;
+      } else {
+        eb.innerHTML = '';
+      }
     }
 
     const btn = $('#btn-send');
@@ -144,7 +151,7 @@
   function renderServiceMode() {
     const el = $('#service-mode');
     if (!el) return;
-    const m = config.serviceMode || 'aqui';
+    const m = config.serviceMode; // sin default: el mesero DEBE elegir
     el.innerHTML = `
       <button class="seg ${m === 'aqui' ? 'active' : ''}" data-mode="aqui">🍽️ Comer aquí</button>
       <button class="seg ${m === 'llevar' ? 'active' : ''}" data-mode="llevar">🥡 Para llevar</button>`;
@@ -297,6 +304,11 @@
       const nm = $('#customer-name'); if (nm) nm.focus();
       return;
     }
+    // el modo de servicio es obligatorio: el mesero debe elegir (sin default)
+    if (config.serviceMode !== 'aqui' && config.serviceMode !== 'llevar') {
+      toast('Elige: 🍽️ Comer aquí o 🥡 Para llevar');
+      return;
+    }
     const corrected = editingNum != null;
     let num;
     if (corrected) {
@@ -307,7 +319,7 @@
     }
     const order = {
       id: uid(), num, ts: Date.now(),
-      serviceMode: config.serviceMode || 'aqui',
+      serviceMode: config.serviceMode,
       corrected,
       lines: Store.clone(cart),
       total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
@@ -318,7 +330,9 @@
     const orders = Store.getOrders();
     orders.push(order);
     Store.saveOrders(orders);
-    config.customerName = ''; // limpia el nombre para el siguiente pedido
+    // limpia para el siguiente pedido: nombre y modo de servicio se vuelven a pedir
+    config.customerName = '';
+    config.serviceMode = null;
     Store.saveConfig(config);
 
     // ¿(re)enviar a cocina? En una corrección, SOLO si cambió algo de lo que
@@ -332,6 +346,7 @@
     Store.saveCart(cart);
     editingNum = null;
     editingKitchenSig = null;
+    editingOriginal = null;
     renderCart();
 
     if (sendKitchen) {
@@ -478,6 +493,7 @@
     if (cat === 'baos') return { key: 'baos', label: 'Pan al vapor', icon: '🥟', order: 6 };
     if (cat === 'fastfood') {
       if (/hot\s*dog/i.test(l.name)) return { key: 'hotdogs', label: 'Hot-dogs', icon: '🌭', order: 4 };
+      if (/papas/i.test(l.name)) return { key: 'papas', label: 'Papas', icon: '🍟', order: 4.5 };
       return { key: 'hamburguesas', label: 'Hamburguesas', icon: '🍔', order: 1 };
     }
     return { key: 'otros', label: 'Otros', icon: '🍽️', order: 9 };
@@ -561,9 +577,9 @@
               <span>👤 ${cliente} · ${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
               <strong>Total ${money(o.total)}</strong>
             </div>
-            ${o.canceled ? '<div class="tag">Anulado</div>' : `<div class="order-actions">
-              <button class="btn-ghost" data-edit="${o.id}">✏️ Editar</button>
-              <button class="btn-ghost danger" data-cancel="${o.id}">Anular</button>
+            ${o.canceled ? '<div class="tag">Cancelado</div>' : `<div class="order-actions">
+              <button class="act-btn act-edit" data-edit="${o.id}">✏️ Editar</button>
+              <button class="act-btn act-cancel" data-cancel="${o.id}">✖ Cancelar</button>
             </div>`}
           </div>
         </div>`;
@@ -584,11 +600,11 @@
     const orders = Store.getOrders();
     const o = orders.find((x) => x.id === id);
     if (!o) return;
-    if (!confirm(`¿Anular el pedido #${o.num}? Se descontará del cierre del día.`)) return;
+    if (!confirm(`¿Cancelar el pedido #${o.num}? Se descontará del cierre del día.`)) return;
     o.canceled = true;
     Store.saveOrders(orders);
     renderCierre();
-    toast(`Pedido #${o.num} anulado`);
+    toast(`Pedido #${o.num} cancelado`);
   }
 
   function editOrder(id) {
@@ -598,6 +614,7 @@
     if (!o || o.canceled) return;
     if (!confirm(`¿Editar el pedido #${o.num}? Se cargará para modificarlo y lo vuelves a enviar como corrección.`)) return;
     // carga las líneas al carrito y quita el original (se re-guardará con el mismo número al reenviar)
+    editingOriginal = Store.clone(o); // guarda el original íntegro por si se cancela la edición
     cart = Store.clone(o.lines);
     Store.saveCart(cart);
     config.serviceMode = o.serviceMode || 'aqui';
@@ -608,6 +625,29 @@
     Store.saveOrders(orders.filter((x) => x.id !== id));
     switchView('pedido');
     toast(`Editando pedido #${o.num}: ajusta y vuelve a enviar`);
+  }
+
+  // Cancela la edición: restaura el pedido original tal cual y limpia el carrito.
+  function cancelEdit() {
+    if (editingNum == null) return;
+    if (!confirm('¿Cancelar la edición? El pedido volverá como estaba, sin cambios.')) return;
+    const num = editingNum;
+    if (editingOriginal) {
+      const orders = Store.getOrders();
+      if (!orders.some((x) => x.id === editingOriginal.id)) orders.push(editingOriginal);
+      Store.saveOrders(orders);
+    }
+    cart = [];
+    Store.saveCart(cart);
+    editingNum = null;
+    editingKitchenSig = null;
+    editingOriginal = null;
+    config.customerName = '';
+    config.serviceMode = null;
+    Store.saveConfig(config);
+    renderCart();
+    switchView('cierre');
+    toast(`Edición cancelada — pedido #${num} intacto`);
   }
 
   function closeDay() {

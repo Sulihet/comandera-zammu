@@ -97,6 +97,7 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   - Hamburguesa Hawaiana $85 (con papas $95).
   - Hamburguesa Sencilla $75 (con papas $85).
   - Hot Dog $75 (incluye papas).
+  - Papas a la francesa: Orden completa $65 · Media orden $35.
   - **Extras de hamburguesa** (multi-selección, se cobran aparte): Carne extra $15 ·
     Tocino $10 · Queso amarillo $5.
 - **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
@@ -158,7 +159,16 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   distinto de `choices` (radio). Los extras suman al precio y salen en línea `➕`.
   Sus precios son **editables en la sección Menú** (inputs `data-xprice="item:extra"`).
 - **Comer aquí / Para llevar**: atributo por pedido (`config.serviceMode`, toggle en el
-  carrito). Va en el encabezado del mensaje y guardado en el pedido.
+  carrito). **Obligatorio y sin default**: si no se elige, no se envía (igual que el nombre
+  del cliente); se resetea a `null` tras cada envío para forzar la elección. Va en el
+  encabezado del mensaje y guardado en el pedido.
+- **Cancelar / Editar pedido**: botones sólidos (Editar mostaza, Cancelar rojo) en el
+  detalle del pedido; "Anular" se renombró a "Cancelar". Al editar, `editingOriginal`
+  guarda el pedido íntegro para poder **Cancelar la edición** (`cancelEdit()`), que
+  restaura el original sin cambios. Ver `renderCierre()` y el banner en `renderCart()`.
+- **Ventas por concepto — Papas**: Papas a la francesa es su propio concepto (`🍟 Papas`,
+  detectado por nombre en fastfood), no se cuenta como Hamburguesa. Ver `conceptOf()`.
+- **Papas a la francesa** también se inyecta a menús ya guardados vía `migrateMenu()`.
 - **Mensaje a WhatsApp agrupado por categoría** (título en negrita + emoji del menú)
   para que cada cocinero identifique su sección. Ver `buildWhatsappText()`. **Sin total**
   (cocina no necesita el monto) y **solo con categorías de cocina**.

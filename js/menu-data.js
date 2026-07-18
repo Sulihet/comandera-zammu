@@ -119,6 +119,13 @@ const DEFAULT_MENU = {
       ],
     },
     { id: 'hotdog', cat: 'fastfood', name: 'Hot Dog (incluye papas)', available: true, notes: true, price: 75 },
+    {
+      id: 'papas_francesa', cat: 'fastfood', name: 'Papas a la francesa', available: true, notes: true,
+      variants: [
+        { id: 'completa', name: 'Orden completa', price: 65 },
+        { id: 'media', name: 'Media orden', price: 35 },
+      ],
+    },
 
     // ---- Pan al Vapor (Baos) ----
     {

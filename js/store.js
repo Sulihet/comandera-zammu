@@ -38,6 +38,20 @@ const Store = (() => {
     };
     ensureSopa('ramen');
     ensureSopa('dumpling_ramen');
+
+    // Papas a la francesa (Orden completa $65 / Media orden $35) en Fast Food
+    if (!m.items.some((x) => x.id === 'papas_francesa')) {
+      const idx = m.items.map((x) => x.cat).lastIndexOf('fastfood');
+      const papas = {
+        id: 'papas_francesa', cat: 'fastfood', name: 'Papas a la francesa', available: true, notes: true,
+        variants: [
+          { id: 'completa', name: 'Orden completa', price: 65 },
+          { id: 'media', name: 'Media orden', price: 35 },
+        ],
+      };
+      if (idx >= 0) m.items.splice(idx + 1, 0, papas); else m.items.push(papas);
+      changed = true;
+    }
     return changed;
   }
 
