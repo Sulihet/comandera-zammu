@@ -64,7 +64,7 @@ const DEFAULT_MENU = {
     {
       id: 'ramen', cat: 'coreano', name: 'Ramen Zammu Waifuu', available: true, notes: true, price: 105,
       choices: [
-        { id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+        { id: 'sopa', name: 'Tipo de ramen', required: true, options: [
           { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
         ] },
         { id: 'picante', name: 'Picante', required: false, options: [
@@ -76,7 +76,7 @@ const DEFAULT_MENU = {
     {
       id: 'dumpling_ramen', cat: 'coreano', name: 'Dumpling & Ramen', available: true, notes: true, price: 100,
       choices: [
-        { id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+        { id: 'sopa', name: 'Tipo de ramen', required: true, options: [
           { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
         ] },
         { id: 'picante', name: 'Picante', required: false, options: [

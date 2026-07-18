@@ -91,8 +91,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
     (reemplaza el precio de la base, sin importar cuál base se elija).
 - **Banderillas Dulces** $60 c/u: Milky Way · Kinder Delice · Choco Roles.
 - **Coreano:** Ramen Zammu Waifuu $105 · Dumpling & Ramen (mitad/mitad) $100 ·
-  Dumplings (5 pzas) $70. **Tipo de sopa** (Habanero Limón / Queso / Carbonara, primero)
+  Dumplings (5 pzas) $70. **Tipo de ramen** (Habanero Limón / Queso / Carbonara, primero)
   solo en Ramen y Dumpling & Ramen; luego nivel de picante (Poco/Dos/Muy/Extremo). Sin costo.
+  (El choice sigue con `id:'sopa'` por compatibilidad; solo cambió la etiqueta.)
 - **Fast Food** (precios actualizados):
   - Hamburguesa Hawaiana $85 (con papas $95).
   - Hamburguesa Sencilla $75 (con papas $85).
@@ -177,8 +178,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   para que cada cocinero identifique su sección. Ver `buildWhatsappText()`. **Sin total**
   (cocina no necesita el monto) y **solo con categorías de cocina**.
 - **Solo se envía a cocina lo que ellos preparan**: `KITCHEN_CATS = [fastfood, coreano,
-  baos]`. Al enviar, el pedido SIEMPRE se guarda (cuenta en el cierre); el WhatsApp solo
-  sale si el pedido incluye alguna categoría de cocina. Si es solo bebidas/banderillas,
+  baos]` vía `isKitchenLine()`, que **además excluye el hot-dog** (lo prepara otra persona).
+  Afecta el mensaje, `orderHasKitchen()` y `kitchenSig()`. Al enviar, el pedido SIEMPRE se
+  guarda (cuenta en el cierre); el WhatsApp solo sale si incluye alguna línea de cocina. Si es solo bebidas/banderillas,
   no se envía (el botón cambia a "Guardar pedido (no va a cocina)"). Ver `sendOrder()` y
   `orderHasKitchen()`.
 - **Reenvío en correcciones = solo si cambió cocina**: al editar, se guarda `kitchenSig()`
@@ -186,7 +188,7 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   (se sumó/quitó/modificó Fast Food/Coreano/Pan). Sumar/quitar banderillas o bebidas
   actualiza la orden pero NO reenvía. Ver `editingKitchenSig` y `sendOrder()`.
 - **Mensaje a cocina — "Con todo" y "Extra"**: una hamburguesa sin nota se marca
-  `🍔 Con todo`; los extras salen como `Extra <nombre>` (sin duplicar si el nombre ya
+  `✅ Con todo` (ícono distinto al 🍔 de Fast Food, para no duplicar); los extras salen como `Extra <nombre>` (sin duplicar si el nombre ya
   incluye "extra", ej. "Carne extra"). Ver `renderLine()` en `buildWhatsappText()`.
 - **Logo real en el encabezado**: `<img class="brand-logo" src="icon.png">` (no emoji).
 - **Confirmación de envío a cocina + reenvío**: `shareToKitchen()` devuelve `true`/`false`

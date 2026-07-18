@@ -24,15 +24,19 @@ const Store = (() => {
   function migrateMenu(m) {
     if (!m || !Array.isArray(m.items)) return false;
     let changed = false;
-    // Tipo de sopa (Habanero Limón / Queso / Carbonara) antes del picante, en ramen y dumpling&ramen
+    // Tipo de ramen (Habanero Limón / Queso / Carbonara) antes del picante, en ramen y dumpling&ramen
     const ensureSopa = (id) => {
       const it = m.items.find((x) => x.id === id);
       if (!it) return;
       it.choices = it.choices || [];
-      if (!it.choices.some((ch) => ch.id === 'sopa')) {
-        it.choices.unshift({ id: 'sopa', name: 'Tipo de sopa', required: true, options: [
+      const sopa = it.choices.find((ch) => ch.id === 'sopa');
+      if (!sopa) {
+        it.choices.unshift({ id: 'sopa', name: 'Tipo de ramen', required: true, options: [
           { id: 'habanerolimon', name: 'Habanero Limón' }, { id: 'queso', name: 'Queso' }, { id: 'carbonara', name: 'Carbonara' },
         ] });
+        changed = true;
+      } else if (sopa.name === 'Tipo de sopa') {
+        sopa.name = 'Tipo de ramen'; // renombra en menús ya migrados
         changed = true;
       }
     };

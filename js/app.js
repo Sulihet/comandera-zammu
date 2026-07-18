@@ -19,13 +19,15 @@
 
   // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
   const KITCHEN_CATS = ['fastfood', 'coreano', 'baos'];
-  const orderHasKitchen = (lines) => lines.some((l) => KITCHEN_CATS.includes(l.cat));
+  // El hot-dog NO se manda a cocina (lo prepara otra persona), aunque sea fastfood.
+  const isKitchenLine = (l) => KITCHEN_CATS.includes(l.cat) && !/hot\s*dog/i.test(l.name);
+  const orderHasKitchen = (lines) => lines.some(isKitchenLine);
 
   // firma de las líneas de cocina; sirve para saber si una corrección cambió
   // algo que cocina prepara (y así decidir si se reenvía el WhatsApp).
   function kitchenSig(lines) {
     return lines
-      .filter((l) => KITCHEN_CATS.includes(l.cat))
+      .filter(isKitchenLine)
       .map((l) => `${l.name}|${l.detail || ''}|${(l.extras || []).slice().sort().join(',')}|${(l.notes || '').trim()}|${l.qty}`)
       .sort()
       .join('||');
@@ -261,10 +263,10 @@
     const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
     let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}${order.customerName ? ' — 👤 ' + order.customerName : ''}* · ${hora}\n*${modeLabel}*\n`;
 
-    // solo las líneas de categorías que cocina prepara
+    // solo las líneas que cocina prepara (excluye hot-dog)
     const groups = {};
     order.lines.forEach((l) => {
-      if (!KITCHEN_CATS.includes(l.cat)) return;
+      if (!isKitchenLine(l)) return;
       if (!groups[l.cat]) groups[l.cat] = [];
       groups[l.cat].push(l);
     });
@@ -278,7 +280,7 @@
       const esHamburguesa = /hamburgues/i.test(l.name);
       const tieneNota = !!(l.notes && l.notes.trim());
       // hamburguesa sin comentarios = con todo (así se avisa a cocina)
-      if (esHamburguesa && !tieneNota) s += `   🍔 Con todo\n`;
+      if (esHamburguesa && !tieneNota) s += `   ✅ Con todo\n`;
       if (l.extras && l.extras.length) s += `   ➕ ${l.extras.map(extraLabel).join(', ')}\n`;
       if (l.notes) s += `   📝 ${l.notes}\n`;
       return s;
