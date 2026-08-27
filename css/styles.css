@@ -215,6 +215,19 @@ main { max-width: 640px; margin: 0 auto; }
 .stepper span { min-width: 24px; text-align: center; font-size: 18px; font-weight: 800; }
 .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
 
+/* ---------- Barra de publicar menú (editor) ---------- */
+.publish-bar { margin-bottom: 16px; }
+.publish-bar .btn-ghost { margin-top: 0; border-style: solid; border-color: var(--primary); color: var(--accent-ink); }
+
+/* ---------- Link del cliente (pedir.html) ---------- */
+.pedir-intro { color: var(--muted); font-size: 14px; margin: 2px 0 14px; }
+.info-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 16px; }
+.info-card h2 { font-size: 15px; margin-bottom: 10px; color: var(--accent-ink); }
+.info-row { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; padding: 5px 0; }
+.info-row .ic { flex: 0 0 auto; width: 20px; text-align: center; }
+.info-row b { font-weight: 700; }
+.pedir-fallback { background: #fbf1d6; border: 1.5px solid var(--primary); color: #6f560f; border-radius: 12px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+
 /* ---------- Toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(80px + var(--safe-b)); transform: translateX(-50%) translateY(20px);

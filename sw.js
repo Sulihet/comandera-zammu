@@ -1,13 +1,17 @@
 /* Service worker: estrategia "primero la red" para que las actualizaciones
    lleguen solas cuando hay wifi; el caché es solo respaldo sin conexión. */
-const CACHE = 'zw-comandera-v25';
+const CACHE = 'zw-comandera-v26';
 const ASSETS = [
   './',
   './index.html',
+  './pedir.html',
   './css/styles.css',
   './js/menu-data.js',
+  './js/menu-logic.js',
   './js/store.js',
   './js/app.js',
+  './js/pedir-config.js',
+  './js/pedir.js',
   './manifest.webmanifest',
   './icon.png',
   './perro.png',

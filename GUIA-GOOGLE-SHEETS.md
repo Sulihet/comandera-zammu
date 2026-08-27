@@ -18,11 +18,28 @@ copie solo a una **Google Sheet del administrador**, para consultar y hacer grá
 3. Copia y pega **todo** este código:
 
 ```javascript
+// Sirve el MENÚ al link del cliente (pedir.html) en formato JSONP.
+// Así el cliente ve en vivo los precios y "agotado" que edita el mesero.
+function doGet(e) {
+  var cb = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : 'callback';
+  var menu = PropertiesService.getScriptProperties().getProperty('MENU') || 'null';
+  return ContentService
+    .createTextOutput(cb + '(' + menu + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     var d = JSON.parse(e.postData.contents);
+
+    // La comandera publica el menú (para el link del cliente): lo guardamos.
+    if (d && d.type === 'menu') {
+      PropertiesService.getScriptProperties().setProperty('MENU', JSON.stringify(d.menu));
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, saved: 'menu' }));
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var stamp = new Date();
     var tz = Session.getScriptTimeZone();
@@ -81,6 +98,60 @@ function doPost(e) {
   → pega la URL → Guardar**.
 
 ¡Listo! Al **Cerrar el día**, aparecerán filas nuevas en las hojas **"Ventas"** y **"Cierres"**.
+
+---
+
+## Paso 5 — Activar el link de pedidos del cliente (WhatsApp)
+
+Con el mismo Apps Script ya conectado, el **link del cliente** (`pedir.html`) muestra
+tu menú **en vivo**: cuando el mesero cambia un precio o marca **"agotado"** en la
+comandera, el link del cliente lo refleja solo. No hay que hacer nada extra: la
+comandera **publica el menú automáticamente** a este mismo script (además puedes
+forzarlo con el botón **📤 Publicar menú al link** en la pestaña **Menú**).
+
+> Si aún no conectas el script, el link igual funciona con un **menú de respaldo**;
+> al conectarlo empieza la sincronización en vivo.
+
+### 5.1 — Arma el link del cliente
+El link es la dirección donde publicaste la app + `pedir.html`. Por ejemplo, si la
+comandera vive en `https://tuusuario.github.io/zammu/`, el link del cliente es:
+
+```
+https://tuusuario.github.io/zammu/pedir.html
+```
+
+Para que el cliente vea el menú en vivo, el link debe conocer tu URL `/exec`. Dos
+formas (elige una):
+
+- **A) Fácil (recomendada):** pega tu URL `/exec` en el archivo `js/pedir-config.js`,
+  en `MENU_FEED_URL`, y vuelve a publicar. El link queda limpio (el de arriba).
+- **B) Sin tocar código:** agrega tu URL al final del link así (todo en una línea):
+
+  ```
+  https://tuusuario.github.io/zammu/pedir.html#feed=PEGA_AQUI_TU_URL_/exec
+  ```
+
+### 5.2 — Pon el link en el Mensaje de bienvenida de WhatsApp Business
+Así, **en cuanto un cliente escribe**, recibe el link al instante (sin que nadie
+conteste):
+
+1. En **WhatsApp Business** (celular del negocio): **Ajustes → Herramientas para la
+   empresa → Mensaje de bienvenida**.
+2. Actívalo y pega un texto como este (ajusta el link):
+
+   ```
+   ¡Hola! 🐶 Gracias por escribir a Zammu Waifuu.
+   Haz tu pedido aquí en 1 minuto y te llega listo:
+   👉 https://tuusuario.github.io/zammu/pedir.html
+
+   🕒 Viernes y sábados · 7:00 a 11:00 pm
+   ```
+
+3. En "Destinatarios" deja **Todos**. Guarda.
+
+Cuando el cliente arma su pedido y toca **Enviar**, WhatsApp se abre con el pedido ya
+escrito **hacia el número del negocio**: solo lo manda, y tú lo recibes limpio y
+completo, listo para pasarlo a cocina con la comandera.
 
 ---
 

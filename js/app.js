@@ -43,34 +43,11 @@
   const statusOf = (o) => (o && STATUS_META[o.status]) ? o.status : 'preparacion'; // compat pedidos viejos
   const nextStatus = (s) => ORDER_STATUS[(ORDER_STATUS.indexOf(statusOf({ status: s })) + 1) % ORDER_STATUS.length];
 
-  // ---------- Cálculo de precio de una línea ----------
-  function calcUnitPrice(item, variant, selections, extras) {
-    let base = variant ? variant.price : (item.price || 0);
-    let override = null;
-    (item.choices || []).forEach((ch) => {
-      const optId = selections[ch.id];
-      if (!optId) return;
-      const opt = ch.options.find((o) => o.id === optId);
-      if (!opt) return;
-      if (opt.overridePrice != null) override = opt.overridePrice;
-      else base += (opt.priceDelta || 0);
-    });
-    let total = override != null ? override : base;
-    (item.extras || []).forEach((ex) => { if (extras && extras.has(ex.id)) total += (ex.priceDelta || 0); });
-    return total;
-  }
-
-  function buildDetail(item, variant, selections) {
-    const parts = [];
-    if (variant) parts.push(variant.name);
-    (item.choices || []).forEach((ch) => {
-      const optId = selections[ch.id];
-      if (!optId) return;
-      const opt = ch.options.find((o) => o.id === optId);
-      if (opt) parts.push(opt.name);
-    });
-    return parts.join(' · ');
-  }
+  // ---------- Cálculo de precio / detalle ----------
+  // Fuente de verdad compartida con el link del cliente (js/menu-logic.js), para
+  // que la comandera y el autoservicio nunca calculen distinto.
+  const calcUnitPrice = MenuLogic.calcUnitPrice;
+  const buildDetail = MenuLogic.buildDetail;
 
   // ==========================================================
   //  VISTA: PEDIDO
@@ -474,7 +451,11 @@
   // ==========================================================
   function renderMenuEditor() {
     const box = $('#menu-editor');
-    box.innerHTML = menu.categories.map((c) => {
+    const publishBar = (config.sheetsUrl || '').trim()
+      ? `<div class="publish-bar"><button class="btn-ghost" id="btn-publish-menu">📤 Publicar menú al link del cliente</button>
+          <p class="hint">El menú y precios se actualizan solos al editar; este botón fuerza el envío ahora.</p></div>`
+      : `<div class="publish-bar"><p class="hint">💡 Conecta tu Google Sheets en ⚙️ Ajustes para que el <b>link del cliente</b> muestre estos precios y el “agotado” en vivo.</p></div>`;
+    box.innerHTML = publishBar + menu.categories.map((c) => {
       const items = menu.items.filter((i) => i.cat === c.id);
       const rows = items.map((i) => {
         const priceCtl = i.variants
@@ -506,7 +487,34 @@
     }).join('');
   }
 
-  function persistMenu() { Store.saveMenu(menu); }
+  function persistMenu() { Store.saveMenu(menu); publishMenu(); }
+
+  // Publica el menú vigente al Apps Script del administrador (mismo endpoint que
+  // el cierre diario, distinguido por type:'menu'). Así el LINK DEL CLIENTE
+  // (pedir.html) refleja en vivo los precios y "agotado" que edita el admin.
+  // no-cors = envío a ciegas; debounced para no disparar en cada tecleo de precio.
+  let publishTimer = null;
+  function publishMenu() {
+    const url = (config.sheetsUrl || '').trim();
+    if (!url) return; // sin Apps Script conectado aún: el link usa el respaldo
+    clearTimeout(publishTimer);
+    publishTimer = setTimeout(() => {
+      try {
+        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu }) }).catch(() => {});
+      } catch (e) { /* sin conexión: se reintenta en la próxima edición */ }
+    }, 1500);
+  }
+
+  // Publica de inmediato (botón manual "Publicar menú al link"), con aviso.
+  function publishMenuNow() {
+    const url = (config.sheetsUrl || '').trim();
+    if (!url) { toast('Primero conecta tu Google Sheets en ⚙️ Ajustes'); return; }
+    clearTimeout(publishTimer);
+    try {
+      fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu }) }).catch(() => {});
+      toast('Menú publicado al link ☁️');
+    } catch (e) { toast('⚠️ No se pudo publicar (revisa tu conexión)'); }
+  }
 
   // ==========================================================
   //  VISTA: CIERRE DEL DÍA
@@ -1100,6 +1108,7 @@
       }
     });
     $('#menu-editor').addEventListener('click', (e) => {
+      if (e.target.closest('#btn-publish-menu')) { publishMenuNow(); return; }
       const del = e.target.closest('[data-delitem]');
       const add = e.target.closest('[data-additem]');
       if (del) {
@@ -1160,6 +1169,7 @@
   // ---------- Arranque ----------
   bind();
   switchView('pedido');
+  publishMenu(); // si hay Sheets conectado, deja el link del cliente al día
 
   // registra el service worker (PWA) si es posible
   if ('serviceWorker' in navigator) {

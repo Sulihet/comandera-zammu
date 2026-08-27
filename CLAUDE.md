@@ -115,6 +115,16 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - `js/menu-data.js` — menú por defecto (`DEFAULT_MENU`) según el menú de arriba.
 - `js/store.js` — persistencia en localStorage (menú, pedidos, cierre, config, carrito).
 - `js/app.js` — lógica de UI: armar pedido, editar menú, cierre del día, envío a WhatsApp.
+- `pedir.html` — **link del cliente** (autoservicio): el cliente arma su pedido tocando
+  el menú y al confirmar se abre WhatsApp con el pedido formateado hacia el negocio.
+- `js/pedir.js` — lógica del link del cliente (subconjunto del armado de pedido de
+  `app.js`, sin Store/cierre/editor). Lee el menú en vivo por JSONP y cae al respaldo.
+- `js/pedir-config.js` — config editable del link: `WHATSAPP_NUMBER` (525569738176),
+  `MENU_FEED_URL` (Apps Script del admin; vacío = usa respaldo) e `INFO` (horario,
+  dirección, tel, IG, envío).
+- `js/menu-logic.js` — lógica **pura** de precio/detalle (`MenuLogic.calcUnitPrice`,
+  `MenuLogic.buildDetail`) compartida por la comandera y el link (una sola fuente de
+  verdad del precio). La cargan `index.html` y `pedir.html` antes de su JS.
 - `manifest.webmanifest` + `sw.js` — instalable como PWA / cache offline básico.
 - `icon.png` — ícono = **logo real** de Zammu Waifuu (448×448, fondo rosa cuadrado).
 - `.nojekyll` + `GUIA-PUBLICAR.md` — publicación en GitHub Pages (guía paso a paso sin terminal).
@@ -211,6 +221,22 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   Apps Script Web App en la cuenta del admin (ver `GUIA-GOOGLE-SHEETS.md`). `no-cors` =
   envío a ciegas (no se lee respuesta). Botón de reenvío por día en Historial (`data-sheet`).
   El link se guarda en `config.sheetsUrl` (Ajustes) y va en el respaldo.
+- **Link del cliente por WhatsApp (autoservicio)** en vez de bot conversacional: el
+  cliente escribe al WhatsApp Business → el **mensaje de bienvenida gratis** responde con
+  un link a `pedir.html` → el cliente arma su pedido tocando el menú → al confirmar,
+  `sendOrder()` abre `wa.me/525569738176?text=<pedido>` (mensaje **completo con total**,
+  distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
+  admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
+  cero recaptura. No usa WhatsApp API de paga.
+- **Menú del link sincronizado en vivo** con la comandera vía el **Apps Script del admin**
+  (mismo `config.sheetsUrl` del cierre, distinguido por `type:'menu'`): al editar el menú,
+  `publishMenu()` (debounced) publica el menú (`doPost type:'menu'` → Script Properties);
+  el link lo lee por **JSONP** (`doGet` → `callback(menuJSON)`, evita CORS). Botón manual
+  "📤 Publicar menú al link" en el editor (aparece solo si hay `sheetsUrl`). El cliente ve
+  precios y **agotado** (`available:false`) en vivo; si no hay feed o falla, cae al menú
+  empacado (`DEFAULT_MENU`). El link también acepta `?feed=`/`#feed=` para activar sin
+  tocar código. Ver `GUIA-GOOGLE-SHEETS.md` (Paso 5) para el Apps Script y el mensaje de
+  bienvenida.
 - **PWA local sin backend** en vez de app nativa o app con servidor: hay un solo
   celular tomando pedidos y wifi estable, así que un backend añade costo y
   complejidad sin beneficio. Reevaluar solo si en el futuro hay más de un mesero.

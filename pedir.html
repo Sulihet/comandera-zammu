@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#d3ad55">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Pedir · Zammu Waifuu</title>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand"><img src="perro.png" alt="Zammu Waifuu" class="brand-logo"> Zammu Waifuu</span>
+  </header>
+
+  <main>
+    <section class="view active">
+      <p class="pedir-intro">Arma tu pedido tocando los platillos y al final te lo enviamos por WhatsApp ✨</p>
+
+      <div class="info-card" id="info-card"></div>
+      <div id="fallback-note"></div>
+
+      <div id="cat-chips" class="chips"></div>
+      <div id="item-list" class="item-grid"></div>
+
+      <div class="cart">
+        <div class="field cart-name-field">
+          <label for="customer-name">Tu nombre</label>
+          <input type="text" id="customer-name" placeholder="ej. Ana" autocomplete="off" maxlength="40">
+        </div>
+        <div id="service-mode" class="service-mode"></div>
+        <div class="cart-head">
+          <strong>Tu pedido</strong>
+          <span class="cart-total-label">Total <b id="cart-total">$0</b></span>
+        </div>
+        <div id="cart-lines" class="cart-lines"></div>
+        <button id="btn-send" class="btn-primary big" disabled>📲 Enviar mi pedido por WhatsApp</button>
+        <p class="hint">Al tocar se abre WhatsApp con tu pedido ya escrito. Solo dale enviar.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-root"></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="js/menu-data.js"></script>
+  <script src="js/menu-logic.js"></script>
+  <script src="js/pedir-config.js"></script>
+  <script src="js/pedir.js"></script>
+</body>
+</html>
