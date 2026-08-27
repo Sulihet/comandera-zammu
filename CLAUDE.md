@@ -118,6 +118,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - `manifest.webmanifest` + `sw.js` — instalable como PWA / cache offline básico.
 - `icon.png` — ícono = **logo real** de Zammu Waifuu (448×448, fondo rosa cuadrado).
 - `.nojekyll` + `GUIA-PUBLICAR.md` — publicación en GitHub Pages (guía paso a paso sin terminal).
+- `GUIA-GOOGLE-SHEETS.md` — guía + código Apps Script para que el ADMINISTRADOR conecte
+  su Google Sheet (Camino A: la base vive en su cuenta; solo comparte el link /exec).
 - **Respaldo/Restaurar**: en Ajustes (⚙️), `exportBackup()`/`importBackup()` en `js/app.js`
   exportan e importan un JSON (formato `v:2`) con `{menu, kitchenNumber, lastOrderNum,
   dayStartedAt, orders, closes}`. Sirve para mover el menú entre celulares y como red de
@@ -203,6 +205,12 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   un grupo con texto, por eso se usa el share sheet. Respaldo: si no hay `share`, usa
   `wa.me/<kitchenNumber>` (número directo opcional en Ajustes) y, en última instancia,
   copia al portapapeles.
+- **Google Sheets del administrador** (`sendToSheets()` + `sheetRows()`): al Cerrar día,
+  la app hace `fetch(config.sheetsUrl, {mode:'no-cors', body: JSON})` con `{date, closedAt,
+  orderCount, grandTotal, items:[{concepto,platillo,cantidad,ingreso}]}`. El destino es un
+  Apps Script Web App en la cuenta del admin (ver `GUIA-GOOGLE-SHEETS.md`). `no-cors` =
+  envío a ciegas (no se lee respuesta). Botón de reenvío por día en Historial (`data-sheet`).
+  El link se guarda en `config.sheetsUrl` (Ajustes) y va en el respaldo.
 - **PWA local sin backend** en vez de app nativa o app con servidor: hay un solo
   celular tomando pedidos y wifi estable, así que un backend añade costo y
   complejidad sin beneficio. Reevaluar solo si en el futuro hay más de un mesero.

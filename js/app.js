@@ -684,6 +684,31 @@
     toast(`Edición cancelada — pedido #${num} intacto`);
   }
 
+  // ---------- Google Sheets (base del administrador) ----------
+  // Agrupa las líneas de un conjunto de pedidos en filas {concepto, platillo, cantidad, ingreso}.
+  function sheetRows(orders) {
+    const map = {};
+    orders.filter((o) => !o.canceled).forEach((o) => o.lines.forEach((l) => {
+      const c = conceptOf(l);
+      const platillo = l.name + (l.detail ? ` (${l.detail})` : '');
+      const key = c.label + '||' + platillo;
+      if (!map[key]) map[key] = { concepto: c.label, platillo, cantidad: 0, ingreso: 0 };
+      map[key].cantidad += l.qty;
+      map[key].ingreso += l.unitPrice * l.qty;
+    }));
+    return Object.values(map);
+  }
+
+  // Envía el cierre de un día a la Google Sheet del administrador (Apps Script Web App).
+  async function sendToSheets(record) {
+    const url = (config.sheetsUrl || '').trim();
+    if (!url) return null; // no configurado
+    try {
+      await fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(record) });
+      return true; // no-cors: no podemos leer la respuesta, pero la petición salió
+    } catch (e) { return false; }
+  }
+
   function closeDay() {
     const orders = Store.getOrders();
     const active = orders.filter((o) => !o.canceled);
@@ -720,6 +745,12 @@
     renderCierre();
     renderHistorial();
     toast('Día cerrado y guardado en Historial ✅');
+
+    // envía el cierre a Google Sheets si está configurado
+    if ((config.sheetsUrl || '').trim()) {
+      const record = { date: Store.todayStr(), closedAt: Date.now(), orderCount: active.length, grandTotal: grand, items: sheetRows(active) };
+      sendToSheets(record).then((ok) => { if (ok) toast('Enviado a Google Sheets ☁️'); else if (ok === false) toast('⚠️ No se pudo enviar a Google Sheets'); });
+    }
   }
 
   // expande/colapsa una tarjeta (.order-card) desde su encabezado
@@ -782,6 +813,7 @@
             ${rows || '<p class="empty">Sin desglose.</p>'}
             ${ordersHtml}
             <button class="btn-ghost" data-share="${c.id || c.closedAt}">📤 Enviar resumen de este día</button>
+            ${(config.sheetsUrl || '').trim() ? `<button class="btn-ghost" data-sheet="${c.id || c.closedAt}">☁️ Enviar a Google Sheets</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -822,6 +854,7 @@
       app: 'zammu-comandera', v: 2, exportedAt: new Date().toISOString(),
       menu,
       kitchenNumber: config.kitchenNumber || '',
+      sheetsUrl: config.sheetsUrl || '',
       lastOrderNum: config.lastOrderNum || 0,
       dayStartedAt: config.dayStartedAt || Store.todayStr(),
       orders: Store.getOrders(),   // pedidos del día
@@ -849,6 +882,7 @@
         menu = data.menu;
         Store.saveMenu(menu);
         if (typeof data.kitchenNumber === 'string') config.kitchenNumber = data.kitchenNumber;
+        if (typeof data.sheetsUrl === 'string') config.sheetsUrl = data.sheetsUrl;
 
         // pedidos del día (opcional): solo si el respaldo los incluye
         let restauroPedidos = false;
@@ -952,6 +986,11 @@
         <input type="tel" id="cfg-num" inputmode="numeric" placeholder="ej. 525569738176" value="${esc(config.kitchenNumber || '')}">
         <p class="hint">Respaldo para celulares sin opción de “compartir”: el pedido iría directo a este número.</p>
       </div>
+      <div class="field">
+        <label>Google Sheets del administrador <small>(opcional)</small></label>
+        <input type="url" id="cfg-sheets" inputmode="url" placeholder="Pega aquí el link de Apps Script" value="${esc(config.sheetsUrl || '')}">
+        <p class="hint">Al <b>Cerrar día</b>, el resumen se copia a esa hoja. El link lo genera el administrador (ver guía).</p>
+      </div>
       <button class="btn-primary big" id="cfg-save">Guardar</button>
 
       <div class="field" style="margin-top:22px">
@@ -966,6 +1005,7 @@
       <button class="btn-ghost danger" id="cfg-reset">Restaurar menú original</button>`;
     $('#cfg-save', body).onclick = () => {
       config.kitchenNumber = $('#cfg-num', body).value.trim();
+      config.sheetsUrl = $('#cfg-sheets', body).value.trim();
       Store.saveConfig(config);
       closeModal(); toast('Ajustes guardados');
     };
@@ -1093,13 +1133,23 @@
     $('#btn-close-day').onclick = closeDay;
     $('#btn-share-day').onclick = shareDayReport;
 
-    // historial: compartir resumen o expandir un día cerrado
+    // historial: compartir resumen, enviar a Sheets, o expandir un día cerrado
     $('#view-historial').addEventListener('click', (e) => {
       const share = e.target.closest('[data-share]');
+      const sheet = e.target.closest('[data-sheet]');
       if (share) {
-        const key = share.dataset.share;
-        const c = Store.getCloses().find((x) => String(x.id || x.closedAt) === key);
+        const c = Store.getCloses().find((x) => String(x.id || x.closedAt) === share.dataset.share);
         if (c) shareCloseReport(c);
+        return;
+      }
+      if (sheet) {
+        const c = Store.getCloses().find((x) => String(x.id || x.closedAt) === sheet.dataset.sheet);
+        if (!c) return;
+        const items = Array.isArray(c.orders) ? sheetRows(c.orders)
+          : Object.entries(c.totals || {}).map(([name, v]) => ({ concepto: '', platillo: name, cantidad: typeof v === 'number' ? v : v.qty, ingreso: typeof v === 'number' ? '' : v.money }));
+        const record = { date: c.date, closedAt: c.closedAt, orderCount: c.orderCount || 0, grandTotal: c.grandTotal || 0, items };
+        toast('Enviando a Google Sheets…');
+        sendToSheets(record).then((ok) => toast(ok ? 'Enviado a Google Sheets ☁️' : '⚠️ No se pudo enviar'));
         return;
       }
       const h = e.target.closest('[data-htoggle]');
