@@ -35,7 +35,7 @@ const PEDIR_CONFIG = {
       max: 3,
       list: ['Chipotle', 'Ranch', 'Blue Cheese', 'Tamarindo Habanero', 'Mango Habanero',
              'Queso Amarillo', 'Valentina', 'Búfalo Wings', 'Mayonesa', 'BBQ',
-             'Mostaza Dulce', 'Sriracha', 'Catsup'],
+             'Mostaza Dulce', 'Sriracha', 'Cátsup'],
     },
     dulce: {
       max: 2,
