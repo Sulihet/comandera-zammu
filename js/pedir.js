@@ -129,8 +129,8 @@
 
   function renderServiceMode() {
     $('#service-mode').innerHTML = `
-      <button class="seg ${mode === 'recoger' ? 'active' : ''}" data-mode="recoger">🥡 Recoger</button>
-      <button class="seg ${mode === 'domicilio' ? 'active' : ''}" data-mode="domicilio">🛵 A domicilio</button>`;
+      <button class="seg seg-2 ${mode === 'recoger' ? 'active' : ''}" data-mode="recoger">🥡 Recoger<small>Paso por él al local</small></button>
+      <button class="seg seg-2 ${mode === 'domicilio' ? 'active' : ''}" data-mode="domicilio">🛵 A domicilio<small>Me lo llevan a mi dirección</small></button>`;
     renderAddress();
   }
 
@@ -344,10 +344,52 @@
       }
     }
 
+    // Candado antierrores: confirmar la elección antes de abrir WhatsApp.
+    showConfirm();
+  }
+
+  // Pantalla de confirmación: repite la elección en grande para que el cliente
+  // no envíe con la opción equivocada por accidente.
+  function showConfirm() {
+    const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
+    let entrega;
+    if (mode === 'domicilio') {
+      const donde = (addrMode === 'ubicacion')
+        ? `🗺️ ${geoloc ? 'Ubicación compartida ✅' : ''}`
+        : `📍 ${esc(address.trim())}`;
+      entrega = `<div class="confirm-mode dom">🛵 ENVÍO A DOMICILIO</div><div class="confirm-sub">${donde}</div>`;
+    } else {
+      const local = (cfg.INFO && cfg.INFO.direccion) ? esc(cfg.INFO.direccion) : '';
+      entrega = `<div class="confirm-mode rec">🥡 RECOGER EN EL LOCAL</div>${local ? `<div class="confirm-sub">📍 ${local}</div>` : ''}`;
+    }
+    const lines = cart.map((l) =>
+      `<div class="confirm-line"><span>${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}</span><b>${money(l.unitPrice * l.qty)}</b></div>`
+    ).join('');
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <h2>Confirma tu pedido</h2>
+      <div class="confirm-box">
+        <div class="confirm-name">👤 ${esc(name.trim())}</div>
+        ${entrega}
+        <div class="confirm-lines">${lines}</div>
+        <div class="confirm-total"><span>Total</span><b>${money(total)}</b></div>
+      </div>
+      <p class="hint">Revisa que la entrega sea la correcta. Al enviar, se abrirá WhatsApp con tu pedido listo.</p>
+      <button class="btn-primary big" id="confirm-send">✅ Sí, enviar por WhatsApp</button>
+      <button class="btn-ghost" id="confirm-edit">✏️ Cambiar</button>`;
+    $('#confirm-send', body).onclick = doSend;
+    $('#confirm-edit', body).onclick = closeModal;
+    showModal(body);
+  }
+
+  function doSend() {
     const text = buildOrderText();
     const num = (cfg.WHATSAPP_NUMBER || '').replace(/\D/g, '');
     const base = num ? `https://wa.me/${num}` : 'https://wa.me/';
     const urlWa = `${base}?text=${encodeURIComponent(text)}`;
+
+    closeModal();
 
     // Respaldo raro: sin número configurado y con Web Share disponible, usa share.
     if (!num && navigator.share) {

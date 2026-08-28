@@ -232,6 +232,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   además **adjuntar su ubicación GPS** (opcional, `navigator.geolocation` → línea
   `🗺️ Ubicación: maps.google.com/?q=lat,lng`); requiere dirección **o** ubicación. La
   sección de Info del link lleva ligas clickeables (Maps en "Dónde", tel, IG, TikTok).
+  **Candado antierrores**: los botones Recoger/A domicilio llevan subtítulo explicativo
+  y, al enviar, `showConfirm()` muestra una pantalla que repite la elección en grande
+  (RECOGER en el local + dirección del local · o ENVÍO A DOMICILIO + dirección/ubicación)
+  con "✅ Sí, enviar" / "✏️ Cambiar"; WhatsApp solo se abre al confirmar (`doSend()`).
   El mensaje sigue siendo
   distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
   admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
