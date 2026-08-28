@@ -137,15 +137,23 @@ conteste):
 
 1. En **WhatsApp Business** (celular del negocio): **Ajustes → Herramientas para la
    empresa → Mensaje de bienvenida**.
-2. Actívalo y pega un texto como este (ajusta el link):
+2. Actívalo y pega este texto (mensaje de bienvenida final):
 
    ```
-   ¡Hola! 🐶 Gracias por escribir a Zammu Waifuu.
-   Haz tu pedido aquí en 1 minuto y te llega listo:
-   👉 https://tuusuario.github.io/zammu/pedir.html
+   ¡Hola! 🐶 Gracias por escribir a Zammu Waifuu 🍜
+
+   Haz tu pedido aquí en 1 minuto: elige tus platillos y personalízalos a tu gusto 👇
+   https://bit.ly/TuPedidoZammuWaifuu
 
    🕒 Viernes y sábados · 7:00 a 11:00 pm
+   🥡 Recoge en el local o 🛵 pídelo a domicilio
+   📍 Ferrocarril de Cuernavaca 1
+
+   ¡Con gusto te atendemos! ✨
    ```
+
+   > El link corto `https://bit.ly/TuPedidoZammuWaifuu` apunta al menú del cliente
+   > (`pedir.html`). Al pegarlo, WhatsApp muestra la tarjeta con el logo de Zammu.
 
 3. En "Destinatarios" deja **Todos**. Guarda.
 
