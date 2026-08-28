@@ -296,8 +296,9 @@
     const selections = {};
     (item.choices || []).forEach((ch) => { if (ch.required) selections[ch.id] = ch.options[0].id; });
     const extras = new Set();
-    // Aderezos: solo banderillas (salada/dulce), solo en el link del cliente.
-    const ader = (cfg.ADEREZOS && (item.cat === 'salada' || item.cat === 'dulce')) ? cfg.ADEREZOS[item.cat] : null;
+    // Aderezos, solo en el link del cliente. Por ID de platillo (ej. papas) o por
+    // categoría (banderillas salada/dulce); el ID gana si existe.
+    const ader = cfg.ADEREZOS ? (cfg.ADEREZOS[item.id] || cfg.ADEREZOS[item.cat]) : null;
     const dressings = new Set();
     let qty = 1;
     let notes = '';

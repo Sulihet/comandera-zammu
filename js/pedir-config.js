@@ -41,5 +41,10 @@ const PEDIR_CONFIG = {
       max: 2,
       list: ['Hershey', 'Lechera'],
     },
+    // Por ID de platillo (gana sobre la categoría): aderezos de las papas.
+    papas_francesa: {
+      max: 3,
+      list: ['Queso', 'Salsa', 'Cátsup'],
+    },
   },
 };

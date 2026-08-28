@@ -240,8 +240,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   `🗺️ Ubicación: maps.google.com/?q=lat,lng`); requiere dirección **o** ubicación. Al
   escribir dirección son **dos campos**: dirección (`📍`) + referencias opcionales (`🔎`).
   Al **Recoger**, una nota avisa que se le notificará por WhatsApp cuando esté listo.
-  **Aderezos** (`PEDIR_CONFIG.ADEREZOS`, multi-selección con tope): SOLO en el link,
-  para banderillas **salada** (hasta 3) y **dulce** (hasta 2). Viven en `pedir-config.js`
+  **Aderezos** (`PEDIR_CONFIG.ADEREZOS`, multi-selección con tope): SOLO en el link.
+  La búsqueda es por **id de platillo** (gana) o por **categoría**: banderillas **salada**
+  (hasta 3) y **dulce** (hasta 2), y **papas** (`papas_francesa`: Queso/Salsa/Cátsup, hasta
+  3). Viven en `pedir-config.js`
   (NO en el menú compartido `menu-data.js`), por eso **no aparecen en la comandera** del
   mesero (en el sitio el cliente los toma solo). Van en la línea del pedido como
   `🧂 Aderezos: …` y en el carrito/confirmación. La
