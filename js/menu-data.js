@@ -100,6 +100,11 @@ const DEFAULT_MENU = {
         { id: 'sinpapas', name: 'Sin papas', price: 85 },
         { id: 'conpapas', name: 'Con papas', price: 95 },
       ],
+      choices: [
+        { id: 'tipo', name: 'Tipo', required: true, options: [
+          { id: 'carne', name: 'Con carne' }, { id: 'vegetariana', name: 'Vegetariana' },
+        ] },
+      ],
       extras: [
         { id: 'carne',   name: 'Carne extra',    priceDelta: 15 },
         { id: 'tocino',  name: 'Tocino',         priceDelta: 10 },
@@ -112,13 +117,25 @@ const DEFAULT_MENU = {
         { id: 'sinpapas', name: 'Sin papas', price: 75 },
         { id: 'conpapas', name: 'Con papas', price: 85 },
       ],
+      choices: [
+        { id: 'tipo', name: 'Tipo', required: true, options: [
+          { id: 'carne', name: 'Con carne' }, { id: 'vegetariana', name: 'Vegetariana' },
+        ] },
+      ],
       extras: [
         { id: 'carne',   name: 'Carne extra',    priceDelta: 15 },
         { id: 'tocino',  name: 'Tocino',         priceDelta: 10 },
         { id: 'quesoam', name: 'Queso amarillo', priceDelta: 5 },
       ],
     },
-    { id: 'hotdog', cat: 'fastfood', name: 'Hot Dog (incluye papas)', available: true, notes: true, price: 75 },
+    {
+      id: 'hotdog', cat: 'fastfood', name: 'Hot Dog (incluye papas)', available: true, notes: true, price: 75,
+      choices: [
+        { id: 'tipo', name: 'Tipo', required: true, options: [
+          { id: 'carne', name: 'Con carne' }, { id: 'vegetariana', name: 'Vegetariana' },
+        ] },
+      ],
+    },
     {
       id: 'papas_francesa', cat: 'fastfood', name: 'Papas a la francesa', available: true, notes: true,
       variants: [

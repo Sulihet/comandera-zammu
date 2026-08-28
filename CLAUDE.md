@@ -101,6 +101,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   - Papas a la francesa: Orden completa $65 · Media orden $35.
   - **Extras de hamburguesa** (multi-selección, se cobran aparte): Carne extra $15 ·
     Tocino $10 · Queso amarillo $5.
+  - **Tipo** (choice `tipo`, obligatorio, sin costo): **Con carne / Vegetariana** en las
+    dos hamburguesas y el hot dog. Va en el menú compartido (`menu-data.js` + migración
+    `ensureTipo` en `store.js`), así que aparece **en la comandera Y en el link**.
 - **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
   Gourmet $35 (pistacho/cheese cake/frutos rojos) · Paquete 4 baos $105 ·
   Paquete 6 baos $165.

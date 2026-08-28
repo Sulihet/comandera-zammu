@@ -43,6 +43,22 @@ const Store = (() => {
     ensureSopa('ramen');
     ensureSopa('dumpling_ramen');
 
+    // Tipo (Con carne / Vegetariana) en hamburguesas y hot dog.
+    const ensureTipo = (id) => {
+      const it = m.items.find((x) => x.id === id);
+      if (!it) return;
+      it.choices = it.choices || [];
+      if (!it.choices.some((ch) => ch.id === 'tipo')) {
+        it.choices.unshift({ id: 'tipo', name: 'Tipo', required: true, options: [
+          { id: 'carne', name: 'Con carne' }, { id: 'vegetariana', name: 'Vegetariana' },
+        ] });
+        changed = true;
+      }
+    };
+    ensureTipo('ham_hawaiana');
+    ensureTipo('ham_sencilla');
+    ensureTipo('hotdog');
+
     // Papas a la francesa (Orden completa $65 / Media orden $35) en Fast Food
     if (!m.items.some((x) => x.id === 'papas_francesa')) {
       const idx = m.items.map((x) => x.cat).lastIndexOf('fastfood');
