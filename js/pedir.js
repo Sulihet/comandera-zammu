@@ -147,7 +147,7 @@
         <label for="cust-address">Tu dirección <small>(para el envío)</small></label>
         <input type="text" id="cust-address" placeholder="Calle y número, colonia y referencias" maxlength="160" value="${esc(address)}">
         ${locBtn}
-        <p class="hint">Cuando envíes tu pedido, te confirmamos el costo del envío por WhatsApp según la distancia.</p>
+        <p class="hint">Recuerda que cuando envíes tu pedido, te confirmamos el costo del envío por WhatsApp según la distancia.</p>
       </div>`;
     const inp = $('#cust-address');
     if (inp) inp.oninput = (e) => { address = e.target.value; saveState(); };
