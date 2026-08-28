@@ -23,7 +23,7 @@
     try { return JSON.parse(localStorage.getItem(K)) || {}; } catch (e) { return {}; }
   }
   function saveState() {
-    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address, geoloc, addrMode })); } catch (e) { /* modo privado, etc. */ }
+    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address, geoloc, addrMode, payMode, payBill })); } catch (e) { /* modo privado, etc. */ }
   }
   const _s = loadState();
   let cart = Array.isArray(_s.cart) ? _s.cart : [];
@@ -36,6 +36,18 @@
   let geoloc = (_s.geoloc && typeof _s.geoloc.lat === 'number' && typeof _s.geoloc.lng === 'number') ? _s.geoloc : null;
   // En domicilio, cómo indica su ubicación: 'texto' (escribe dirección) o 'ubicacion' (GPS).
   let addrMode = (_s.addrMode === 'ubicacion') ? 'ubicacion' : 'texto';
+  // Pago: 'efectivo' | 'transferencia' | 'tarjeta' (tarjeta solo al recoger) | null.
+  let payMode = (['efectivo', 'transferencia', 'tarjeta'].indexOf(_s.payMode) >= 0) ? _s.payMode : null;
+  // Con cuánto paga (denominación) cuando es domicilio + efectivo, para llevar cambio.
+  let payBill = typeof _s.payBill === 'string' ? _s.payBill : '';
+
+  // Métodos de pago y billetes rápidos.
+  const PAY = {
+    efectivo:      { ic: '💵', name: 'Efectivo' },
+    transferencia: { ic: '🏦', name: 'Transferencia' },
+    tarjeta:       { ic: '💳', name: 'Tarjeta' },
+  };
+  const BILLS = ['Pago justo', '$100', '$200', '$500', '$1000'];
 
   let menu = DEFAULT_MENU;          // respaldo hasta que llegue el menú en vivo
   let currentCat = menu.categories[0] ? menu.categories[0].id : null;
@@ -132,6 +144,39 @@
       <button class="seg seg-2 ${mode === 'recoger' ? 'active' : ''}" data-mode="recoger">🥡 Recoger<small>Paso por él al local</small></button>
       <button class="seg seg-2 ${mode === 'domicilio' ? 'active' : ''}" data-mode="domicilio">🛵 A domicilio<small>Me lo llevan a mi dirección</small></button>`;
     renderAddress();
+    renderPayment();
+  }
+
+  // Tipo de pago. Tarjeta solo aplica al RECOGER (no a domicilio). En domicilio +
+  // efectivo, pide con cuánto paga para llevar cambio.
+  function renderPayment() {
+    const wrap = $('#pay-wrap');
+    if (!wrap) return;
+    if (mode !== 'recoger' && mode !== 'domicilio') { wrap.innerHTML = ''; return; }
+    // si cambió a domicilio con "tarjeta" elegida, esa opción ya no aplica
+    if (mode === 'domicilio' && payMode === 'tarjeta') { payMode = null; saveState(); }
+
+    const opts = mode === 'recoger' ? ['efectivo', 'transferencia', 'tarjeta'] : ['efectivo', 'transferencia'];
+    const segs = opts.map((k) =>
+      `<button class="seg ${payMode === k ? 'active' : ''}" data-pay="${k}">${PAY[k].ic} ${PAY[k].name}</button>`
+    ).join('');
+
+    let billBlock = '';
+    if (mode === 'domicilio' && payMode === 'efectivo') {
+      const chips = BILLS.map((b) =>
+        `<button class="opt ${payBill === b ? 'sel' : ''}" data-bill="${esc(b)}">${esc(b)}</button>`
+      ).join('');
+      billBlock = `<div class="field"><label>¿Con cuánto pagas? <small>(para llevarte cambio)</small></label><div class="opt-row">${chips}</div></div>`;
+    }
+
+    wrap.innerHTML = `<div class="field"><label>¿Cómo vas a pagar?</label><div class="service-mode pay-seg">${segs}</div></div>${billBlock}`;
+    $$('[data-pay]', wrap).forEach((b) => b.onclick = () => {
+      payMode = b.dataset.pay;
+      if (payMode !== 'efectivo') payBill = ''; // el cambio solo aplica a efectivo
+      saveState();
+      renderPayment();
+    });
+    $$('[data-bill]', wrap).forEach((b) => b.onclick = () => { payBill = b.dataset.bill; saveState(); renderPayment(); });
   }
 
   // La dirección solo se pide (y es obligatoria) cuando es A domicilio.
@@ -319,6 +364,13 @@
       if (addrMode === 'ubicacion' && geoloc) t += `🗺️ Ubicación: https://maps.google.com/?q=${geoloc.lat},${geoloc.lng}\n`;
       else if (address.trim()) t += `📍 ${address.trim()}\n`;
     }
+    if (PAY[payMode]) {
+      t += `${PAY[payMode].ic} Pago: ${PAY[payMode].name}`;
+      if (mode === 'domicilio' && payMode === 'efectivo' && payBill) {
+        t += payBill === 'Pago justo' ? ' — pago justo (sin cambio)' : ` — paga con ${payBill} (llevar cambio)`;
+      }
+      t += `\n`;
+    }
     t += `━━━━━━━━━━\n`;
     cart.forEach((l) => {
       t += `• ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''} — ${money(l.unitPrice * l.qty)}\n`;
@@ -343,6 +395,8 @@
         return;
       }
     }
+    if (!PAY[payMode]) { toast('Elige cómo vas a pagar 💳'); return; }
+    if (mode === 'domicilio' && payMode === 'efectivo' && !payBill) { toast('Indica con cuánto pagas (para el cambio) 💵'); return; }
 
     // Candado antierrores: confirmar la elección antes de abrir WhatsApp.
     showConfirm();
@@ -362,6 +416,13 @@
       const local = (cfg.INFO && cfg.INFO.direccion) ? esc(cfg.INFO.direccion) : '';
       entrega = `<div class="confirm-mode rec">🥡 RECOGER EN EL LOCAL</div>${local ? `<div class="confirm-sub">📍 ${local}</div>` : ''}`;
     }
+    // pago (y cambio si aplica)
+    let pagoTxt = PAY[payMode] ? PAY[payMode].name : '';
+    if (mode === 'domicilio' && payMode === 'efectivo' && payBill) {
+      pagoTxt += payBill === 'Pago justo' ? ' · pago justo' : ` · paga con ${payBill}`;
+    }
+    const pago = PAY[payMode] ? `<div class="confirm-sub">${PAY[payMode].ic} Pago: ${esc(pagoTxt)}</div>` : '';
+
     const lines = cart.map((l) =>
       `<div class="confirm-line"><span>${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}</span><b>${money(l.unitPrice * l.qty)}</b></div>`
     ).join('');
@@ -372,6 +433,7 @@
       <div class="confirm-box">
         <div class="confirm-name">👤 ${esc(name.trim())}</div>
         ${entrega}
+        ${pago}
         <div class="confirm-lines">${lines}</div>
         <div class="confirm-total"><span>Total</span><b>${money(total)}</b></div>
       </div>
@@ -404,6 +466,8 @@
     address = '';
     geoloc = null;
     addrMode = 'texto';
+    payMode = null;
+    payBill = '';
     saveState();
     renderCart();
     toast('Abriendo WhatsApp… solo dale enviar 📲');
