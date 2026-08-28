@@ -17,9 +17,13 @@ const PEDIR_CONFIG = {
   INFO: {
     horario: 'Viernes y sábados · 7:00 pm a 11:00 pm',
     direccion: 'Ferrocarril de Cuernavaca 1',
+    mapsUrl: 'https://maps.app.goo.gl/DQUfsFGt7vrPq9Vc8',
     tel: '55 6973 8176',
     ig: '@zammuwaifuu',
+    igUrl: 'https://instagram.com/zammuwaifuu',
+    tiktok: '@zammu_waifuu',
+    tiktokUrl: 'https://tiktok.com/@zammu_waifuu',
     // Recoger o envío a domicilio (el cliente decide). Tarifa por distancia.
-    envio: 'Recoge tu pedido o pídelo a domicilio: distancia corta $20 · media $30 · larga $40. Mándanos tu dirección al enviar el pedido y te confirmamos el costo.',
+    envio: 'Recoge tu pedido o pídelo a domicilio. El costo por distancia corta es de $20, media $30 y larga $40. Al enviar tu pedido te confirmaremos el costo del envío.',
   },
 };

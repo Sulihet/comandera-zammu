@@ -227,6 +227,8 @@ main { max-width: 640px; margin: 0 auto; }
 .info-row .ic { flex: 0 0 auto; width: 20px; text-align: center; }
 .info-row b { font-weight: 700; }
 .pedir-fallback { background: #fbf1d6; border: 1.5px solid var(--primary); color: #6f560f; border-radius: 12px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+.info-row a { color: var(--accent-ink); font-weight: 700; text-decoration: underline; }
+.btn-outline.loc-on { border-color: var(--green); color: var(--green); background: #eef8f0; }
 
 /* ---------- Toast ---------- */
 .toast {

@@ -228,7 +228,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   con encabezado **Recoger / A domicilio** —no "Comer aquí", el cliente no está en el
   local— y línea `📍 dirección` cuando es a domicilio, obligatoria; el negocio confirma
   el costo del envío por chat). Distinto de la comandera del mesero, que sí usa Comer
-  aquí / Para llevar para pedidos en el local. El mensaje sigue siendo
+  aquí / Para llevar para pedidos en el local. En "A domicilio", el cliente puede
+  además **adjuntar su ubicación GPS** (opcional, `navigator.geolocation` → línea
+  `🗺️ Ubicación: maps.google.com/?q=lat,lng`); requiere dirección **o** ubicación. La
+  sección de Info del link lleva ligas clickeables (Maps en "Dónde", tel, IG, TikTok).
+  El mensaje sigue siendo
   distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
   admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
   cero recaptura. No usa WhatsApp API de paga.

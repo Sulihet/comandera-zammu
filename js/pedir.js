@@ -23,7 +23,7 @@
     try { return JSON.parse(localStorage.getItem(K)) || {}; } catch (e) { return {}; }
   }
   function saveState() {
-    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address })); } catch (e) { /* modo privado, etc. */ }
+    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address, geoloc })); } catch (e) { /* modo privado, etc. */ }
   }
   const _s = loadState();
   let cart = Array.isArray(_s.cart) ? _s.cart : [];
@@ -31,6 +31,9 @@
   // El cliente por WhatsApp NO come en el local: solo Recoger o A domicilio.
   let mode = (_s.mode === 'recoger' || _s.mode === 'domicilio') ? _s.mode : null;
   let address = typeof _s.address === 'string' ? _s.address : '';
+  // Ubicación GPS opcional (para domicilio): {lat, lng} o null.
+  // OJO: no llamar esta variable "location" (taparía window.location y rompe el feed).
+  let geoloc = (_s.geoloc && typeof _s.geoloc.lat === 'number' && typeof _s.geoloc.lng === 'number') ? _s.geoloc : null;
 
   let menu = DEFAULT_MENU;          // respaldo hasta que llegue el menú en vivo
   let currentCat = menu.categories[0] ? menu.categories[0].id : null;
@@ -74,16 +77,21 @@
   // ---------- INFO ----------
   function renderInfo() {
     const i = cfg.INFO || {};
+    // [icono, etiqueta, texto, href?]  -> href hace el texto clickeable
     const rows = [
-      ['🕒', 'Horario', i.horario],
-      ['📍', 'Dónde', i.direccion],
-      ['📞', 'Teléfono', i.tel],
-      ['📸', 'Instagram', i.ig],
-      ['🛵', 'Envío', i.envio],
+      ['🕒', 'Horario', i.horario, null],
+      ['📍', 'Dónde', i.direccion, i.mapsUrl],
+      ['📞', 'Teléfono', i.tel, i.tel ? 'tel:' + i.tel.replace(/\s+/g, '') : null],
+      ['📸', 'Instagram', i.ig, i.igUrl],
+      ['🎵', 'TikTok', i.tiktok, i.tiktokUrl],
+      ['🛵', 'Envío', i.envio, null],
     ].filter((r) => r[2]);
-    $('#info-card').innerHTML = `<h2>Información</h2>` + rows.map((r) =>
-      `<div class="info-row"><span class="ic">${r[0]}</span><span><b>${esc(r[1])}:</b> ${esc(r[2])}</span></div>`
-    ).join('');
+    $('#info-card').innerHTML = `<h2>Información</h2>` + rows.map((r) => {
+      const val = r[3]
+        ? `<a href="${esc(r[3])}" target="_blank" rel="noopener">${esc(r[2])}</a>`
+        : esc(r[2]);
+      return `<div class="info-row"><span class="ic">${r[0]}</span><span><b>${esc(r[1])}:</b> ${val}</span></div>`;
+    }).join('');
   }
 
   // ---------- Menú ----------
@@ -125,21 +133,42 @@
   }
 
   // La dirección solo se pide (y es obligatoria) cuando es A domicilio.
+  // Además, el cliente puede adjuntar su ubicación GPS (opcional): agrega un link
+  // de mapa al pedido para ubicarlo con precisión.
   function renderAddress() {
     const wrap = $('#address-wrap');
     if (!wrap) return;
-    if (mode === 'domicilio') {
-      wrap.innerHTML = `
-        <div class="field">
-          <label for="cust-address">Tu dirección <small>(para el envío)</small></label>
-          <input type="text" id="cust-address" placeholder="Calle y número, colonia y referencias" maxlength="160" value="${esc(address)}">
-          <p class="hint">Te confirmamos el costo del envío por WhatsApp según la distancia.</p>
-        </div>`;
-      const inp = $('#cust-address');
-      if (inp) inp.oninput = (e) => { address = e.target.value; saveState(); };
-    } else {
-      wrap.innerHTML = '';
-    }
+    if (mode !== 'domicilio') { wrap.innerHTML = ''; return; }
+    const locBtn = geoloc
+      ? `<button type="button" class="btn-outline loc-on" id="btn-loc">✅ Ubicación adjunta · toca para quitar</button>`
+      : `<button type="button" class="btn-ghost" id="btn-loc">📍 Adjuntar mi ubicación <small>(opcional)</small></button>`;
+    wrap.innerHTML = `
+      <div class="field">
+        <label for="cust-address">Tu dirección <small>(para el envío)</small></label>
+        <input type="text" id="cust-address" placeholder="Calle y número, colonia y referencias" maxlength="160" value="${esc(address)}">
+        ${locBtn}
+        <p class="hint">Cuando envíes tu pedido, te confirmamos el costo del envío por WhatsApp según la distancia.</p>
+      </div>`;
+    const inp = $('#cust-address');
+    if (inp) inp.oninput = (e) => { address = e.target.value; saveState(); };
+    const btn = $('#btn-loc');
+    if (btn) btn.onclick = toggleLocation;
+  }
+
+  function toggleLocation() {
+    if (geoloc) { geoloc = null; saveState(); renderAddress(); return; } // quitar
+    if (!navigator.geolocation) { toast('Tu teléfono no permite compartir ubicación; escribe tu dirección'); return; }
+    toast('Obteniendo tu ubicación…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        geoloc = { lat: +pos.coords.latitude.toFixed(6), lng: +pos.coords.longitude.toFixed(6) };
+        saveState();
+        renderAddress();
+        toast('Ubicación adjunta ✅');
+      },
+      () => { toast('No se pudo obtener tu ubicación; escribe tu dirección 📍'); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
 
   function renderCart() {
@@ -272,6 +301,7 @@
     let t = `🐶 *ZAMMU WAIFUU — Pedido en línea*\n`;
     t += `*👤 ${name}*  ·  *${modeLabel}*\n`;
     if (mode === 'domicilio' && address.trim()) t += `📍 ${address.trim()}\n`;
+    if (mode === 'domicilio' && geoloc) t += `🗺️ Ubicación: https://maps.google.com/?q=${geoloc.lat},${geoloc.lng}\n`;
     t += `━━━━━━━━━━\n`;
     cart.forEach((l) => {
       t += `• ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''} — ${money(l.unitPrice * l.qty)}\n`;
@@ -288,8 +318,8 @@
     if (!cart.length) return;
     if (!name.trim()) { toast('Escribe tu nombre 🙂'); const nm = $('#customer-name'); if (nm) nm.focus(); return; }
     if (mode !== 'recoger' && mode !== 'domicilio') { toast('Elige: 🥡 Recoger o 🛵 A domicilio'); return; }
-    if (mode === 'domicilio' && !address.trim()) {
-      toast('Escribe tu dirección para el envío 📍');
+    if (mode === 'domicilio' && !address.trim() && !geoloc) {
+      toast('Escribe tu dirección o adjunta tu ubicación 📍');
       const a = $('#cust-address'); if (a) a.focus();
       return;
     }
@@ -310,6 +340,7 @@
     cart = [];
     mode = null;
     address = '';
+    geoloc = null;
     saveState();
     renderCart();
     toast('Abriendo WhatsApp… solo dale enviar 📲');
