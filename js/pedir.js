@@ -210,11 +210,11 @@
 
     // El cliente elige cómo indicar dónde: escribir dirección o compartir ubicación.
     const picker = `
+      <p class="hint" style="margin:0 0 8px">Elige <b>Escribir dirección</b> si prefieres teclearla, o <b>Compartir ubicación</b> para enviar tu ubicación exacta desde el celular (más preciso).</p>
       <div class="service-mode addr-picker">
         <button class="seg ${addrMode === 'texto' ? 'active' : ''}" data-addr="texto">✍️ Escribir dirección</button>
         <button class="seg ${addrMode === 'ubicacion' ? 'active' : ''}" data-addr="ubicacion">📍 Compartir ubicación</button>
-      </div>
-      <p class="hint">Elige <b>Escribir dirección</b> si prefieres teclearla, o <b>Compartir ubicación</b> para enviar tu ubicación exacta desde el celular (más preciso).</p>`;
+      </div>`;
 
     const inputBlock = addrMode === 'ubicacion'
       ? (geoloc
