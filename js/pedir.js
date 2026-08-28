@@ -23,7 +23,7 @@
     try { return JSON.parse(localStorage.getItem(K)) || {}; } catch (e) { return {}; }
   }
   function saveState() {
-    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address, geoloc, addrMode, payMode, payBill, payBillOther })); } catch (e) { /* modo privado, etc. */ }
+    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address, reference, geoloc, addrMode, payMode, payBill, payBillOther })); } catch (e) { /* modo privado, etc. */ }
   }
   const _s = loadState();
   let cart = Array.isArray(_s.cart) ? _s.cart : [];
@@ -31,6 +31,8 @@
   // El cliente por WhatsApp NO come en el local: solo Recoger o A domicilio.
   let mode = (_s.mode === 'recoger' || _s.mode === 'domicilio') ? _s.mode : null;
   let address = typeof _s.address === 'string' ? _s.address : '';
+  // Referencias (entre calles, color de casa…) cuando escribe su dirección. Opcional.
+  let reference = typeof _s.reference === 'string' ? _s.reference : '';
   // Ubicación GPS opcional (para domicilio): {lat, lng} o null.
   // OJO: no llamar esta variable "location" (taparía window.location y rompe el feed).
   let geoloc = (_s.geoloc && typeof _s.geoloc.lat === 'number' && typeof _s.geoloc.lng === 'number') ? _s.geoloc : null;
@@ -199,6 +201,11 @@
   function renderAddress() {
     const wrap = $('#address-wrap');
     if (!wrap) return;
+    // Recoger: avisamos que le llegará un WhatsApp cuando esté listo.
+    if (mode === 'recoger') {
+      wrap.innerHTML = `<div class="pedir-note">🥡 Recoge en el local. Te avisaremos por WhatsApp cuando tu pedido esté listo para que pases por él.</div>`;
+      return;
+    }
     if (mode !== 'domicilio') { wrap.innerHTML = ''; return; }
 
     // El cliente elige cómo indicar dónde: escribir dirección o compartir ubicación.
@@ -206,13 +213,15 @@
       <div class="service-mode addr-picker">
         <button class="seg ${addrMode === 'texto' ? 'active' : ''}" data-addr="texto">✍️ Escribir dirección</button>
         <button class="seg ${addrMode === 'ubicacion' ? 'active' : ''}" data-addr="ubicacion">📍 Compartir ubicación</button>
-      </div>`;
+      </div>
+      <p class="hint">Elige <b>Escribir dirección</b> si prefieres teclearla, o <b>Compartir ubicación</b> para enviar tu ubicación exacta desde el celular (más preciso).</p>`;
 
     const inputBlock = addrMode === 'ubicacion'
       ? (geoloc
           ? `<button type="button" class="btn-outline loc-on" id="btn-loc">✅ Ubicación compartida · toca para quitar</button>`
           : `<button type="button" class="btn-primary big" id="btn-loc">📍 Compartir mi ubicación</button>`)
-      : `<input type="text" id="cust-address" placeholder="Calle y número, colonia y referencias" maxlength="160" value="${esc(address)}">`;
+      : `<input type="text" id="cust-address" placeholder="Calle y número, colonia" maxlength="160" value="${esc(address)}">
+         <input type="text" id="cust-ref" class="mt8" placeholder="Referencias: entre calles, color de casa… (opcional)" maxlength="160" value="${esc(reference)}">`;
 
     wrap.innerHTML = `
       <div class="field">
@@ -225,6 +234,8 @@
     $$('[data-addr]', wrap).forEach((b) => b.onclick = () => { addrMode = b.dataset.addr; saveState(); renderAddress(); });
     const inp = $('#cust-address');
     if (inp) inp.oninput = (e) => { address = e.target.value; saveState(); };
+    const ref = $('#cust-ref');
+    if (ref) ref.oninput = (e) => { reference = e.target.value; saveState(); };
     const btn = $('#btn-loc');
     if (btn) btn.onclick = toggleLocation;
   }
@@ -376,7 +387,10 @@
     t += `*👤 ${name}*  ·  *${modeLabel}*\n`;
     if (mode === 'domicilio') {
       if (addrMode === 'ubicacion' && geoloc) t += `🗺️ Ubicación: https://maps.google.com/?q=${geoloc.lat},${geoloc.lng}\n`;
-      else if (address.trim()) t += `📍 ${address.trim()}\n`;
+      else if (address.trim()) {
+        t += `📍 ${address.trim()}\n`;
+        if (reference.trim()) t += `🔎 Ref: ${reference.trim()}\n`;
+      }
     }
     if (mode === 'domicilio' && PAY[payMode]) {
       t += `${PAY[payMode].ic} Pago: ${PAY[payMode].name}`;
@@ -427,9 +441,13 @@
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     let entrega;
     if (mode === 'domicilio') {
-      const donde = (addrMode === 'ubicacion')
-        ? `🗺️ ${geoloc ? 'Ubicación compartida ✅' : ''}`
-        : `📍 ${esc(address.trim())}`;
+      let donde;
+      if (addrMode === 'ubicacion') {
+        donde = `🗺️ ${geoloc ? 'Ubicación compartida ✅' : ''}`;
+      } else {
+        donde = `📍 ${esc(address.trim())}`;
+        if (reference.trim()) donde += `<br>🔎 ${esc(reference.trim())}`;
+      }
       entrega = `<div class="confirm-mode dom">🛵 ENVÍO A DOMICILIO</div><div class="confirm-sub">${donde}</div>`;
     } else {
       const local = (cfg.INFO && cfg.INFO.direccion) ? esc(cfg.INFO.direccion) : '';
@@ -487,6 +505,7 @@
     cart = [];
     mode = null;
     address = '';
+    reference = '';
     geoloc = null;
     addrMode = 'texto';
     payMode = null;

@@ -230,7 +230,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   el costo del envío por chat). Distinto de la comandera del mesero, que sí usa Comer
   aquí / Para llevar para pedidos en el local. En "A domicilio", el cliente puede
   además **adjuntar su ubicación GPS** (opcional, `navigator.geolocation` → línea
-  `🗺️ Ubicación: maps.google.com/?q=lat,lng`); requiere dirección **o** ubicación. La
+  `🗺️ Ubicación: maps.google.com/?q=lat,lng`); requiere dirección **o** ubicación. Al
+  escribir dirección son **dos campos**: dirección (`📍`) + referencias opcionales (`🔎`).
+  Al **Recoger**, una nota avisa que se le notificará por WhatsApp cuando esté listo. La
   sección de Info del link lleva ligas clickeables (Maps en "Dónde", tel, IG, TikTok).
   **Candado antierrores**: los botones Recoger/A domicilio llevan subtítulo explicativo
   y, al enviar, `showConfirm()` muestra una pantalla que repite la elección en grande
