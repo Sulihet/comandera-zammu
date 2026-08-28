@@ -23,12 +23,14 @@
     try { return JSON.parse(localStorage.getItem(K)) || {}; } catch (e) { return {}; }
   }
   function saveState() {
-    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode })); } catch (e) { /* modo privado, etc. */ }
+    try { localStorage.setItem(K, JSON.stringify({ cart, name, mode, address })); } catch (e) { /* modo privado, etc. */ }
   }
   const _s = loadState();
   let cart = Array.isArray(_s.cart) ? _s.cart : [];
   let name = typeof _s.name === 'string' ? _s.name : '';
-  let mode = (_s.mode === 'aqui' || _s.mode === 'llevar') ? _s.mode : null;
+  // El cliente por WhatsApp NO come en el local: solo Recoger o A domicilio.
+  let mode = (_s.mode === 'recoger' || _s.mode === 'domicilio') ? _s.mode : null;
+  let address = typeof _s.address === 'string' ? _s.address : '';
 
   let menu = DEFAULT_MENU;          // respaldo hasta que llegue el menú en vivo
   let currentCat = menu.categories[0] ? menu.categories[0].id : null;
@@ -117,8 +119,27 @@
 
   function renderServiceMode() {
     $('#service-mode').innerHTML = `
-      <button class="seg ${mode === 'aqui' ? 'active' : ''}" data-mode="aqui">🍽️ Comer aquí</button>
-      <button class="seg ${mode === 'llevar' ? 'active' : ''}" data-mode="llevar">🥡 Para llevar</button>`;
+      <button class="seg ${mode === 'recoger' ? 'active' : ''}" data-mode="recoger">🥡 Recoger</button>
+      <button class="seg ${mode === 'domicilio' ? 'active' : ''}" data-mode="domicilio">🛵 A domicilio</button>`;
+    renderAddress();
+  }
+
+  // La dirección solo se pide (y es obligatoria) cuando es A domicilio.
+  function renderAddress() {
+    const wrap = $('#address-wrap');
+    if (!wrap) return;
+    if (mode === 'domicilio') {
+      wrap.innerHTML = `
+        <div class="field">
+          <label for="cust-address">Tu dirección <small>(para el envío)</small></label>
+          <input type="text" id="cust-address" placeholder="Calle y número, colonia y referencias" maxlength="160" value="${esc(address)}">
+          <p class="hint">Te confirmamos el costo del envío por WhatsApp según la distancia.</p>
+        </div>`;
+      const inp = $('#cust-address');
+      if (inp) inp.oninput = (e) => { address = e.target.value; saveState(); };
+    } else {
+      wrap.innerHTML = '';
+    }
   }
 
   function renderCart() {
@@ -247,9 +268,10 @@
 
   // ---------- Enviar el pedido por WhatsApp (hacia el negocio) ----------
   function buildOrderText() {
-    const modeLabel = mode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
+    const modeLabel = mode === 'domicilio' ? '🛵 A DOMICILIO' : '🥡 RECOGER';
     let t = `🐶 *ZAMMU WAIFUU — Pedido en línea*\n`;
     t += `*👤 ${name}*  ·  *${modeLabel}*\n`;
+    if (mode === 'domicilio' && address.trim()) t += `📍 ${address.trim()}\n`;
     t += `━━━━━━━━━━\n`;
     cart.forEach((l) => {
       t += `• ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''} — ${money(l.unitPrice * l.qty)}\n`;
@@ -265,7 +287,12 @@
   function sendOrder() {
     if (!cart.length) return;
     if (!name.trim()) { toast('Escribe tu nombre 🙂'); const nm = $('#customer-name'); if (nm) nm.focus(); return; }
-    if (mode !== 'aqui' && mode !== 'llevar') { toast('Elige: 🍽️ Comer aquí o 🥡 Para llevar'); return; }
+    if (mode !== 'recoger' && mode !== 'domicilio') { toast('Elige: 🥡 Recoger o 🛵 A domicilio'); return; }
+    if (mode === 'domicilio' && !address.trim()) {
+      toast('Escribe tu dirección para el envío 📍');
+      const a = $('#cust-address'); if (a) a.focus();
+      return;
+    }
 
     const text = buildOrderText();
     const num = (cfg.WHATSAPP_NUMBER || '').replace(/\D/g, '');
@@ -282,6 +309,7 @@
     // Vacía el pedido para el siguiente; el nombre se conserva por comodidad.
     cart = [];
     mode = null;
+    address = '';
     saveState();
     renderCart();
     toast('Abriendo WhatsApp… solo dale enviar 📲');

@@ -225,6 +225,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   cliente escribe al WhatsApp Business → el **mensaje de bienvenida gratis** responde con
   un link a `pedir.html` → el cliente arma su pedido tocando el menú → al confirmar,
   `sendOrder()` abre `wa.me/525569738176?text=<pedido>` (mensaje **completo con total**,
+  con encabezado **Recoger / A domicilio** —no "Comer aquí", el cliente no está en el
+  local— y línea `📍 dirección` cuando es a domicilio, obligatoria; el negocio confirma
+  el costo del envío por chat). Distinto de la comandera del mesero, que sí usa Comer
+  aquí / Para llevar para pedidos en el local. El mensaje sigue siendo
   distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
   admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
   cero recaptura. No usa WhatsApp API de paga.

@@ -46,8 +46,10 @@ ausencia automático donde cabe un link.
 - Al confirmar, el cliente ve un **resumen con total** y un botón que **manda el
   pedido formateado de vuelta por WhatsApp** al número del negocio (o a quien
   reciba), en el mismo formato limpio que ya usa la comandera.
-- El cliente captura su **nombre** (para identificar el pedido) y elige
-  **Comer aquí / Para llevar** (mismo criterio que la comandera).
+- El cliente captura su **nombre** y elige **Recoger** o **A domicilio** (el cliente
+  por WhatsApp no está en el local, así que **no** hay "Comer aquí"). Si elige **A
+  domicilio**, escribe su **dirección** (obligatoria), que viaja dentro del pedido; el
+  negocio confirma el costo del envío por WhatsApp según la distancia.
 - Una **sección de información** dentro del link: horario, ubicación, teléfono,
   IG y aviso de si hay o no envío (texto fijo, editable por el admin).
 - Un **texto de mensaje de bienvenida** listo para pegar en WhatsApp Business,
