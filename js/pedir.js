@@ -516,8 +516,45 @@
     showModal(body);
   }
 
+  // Arma el pedido estructurado para enviarlo a la comandera (por el Apps Script).
+  // Es lo que la comandera muestra en su bandeja "En línea" y convierte en pedido.
+  function buildOrderPayload() {
+    return {
+      id: uid(),
+      ts: Date.now(),
+      source: 'online',
+      customerName: name.trim(),
+      serviceMode: mode,                 // 'recoger' | 'domicilio'
+      addrMode: mode === 'domicilio' ? addrMode : null,
+      address: mode === 'domicilio' && addrMode === 'texto' ? address.trim() : '',
+      reference: mode === 'domicilio' && addrMode === 'texto' ? reference.trim() : '',
+      geoloc: mode === 'domicilio' && addrMode === 'ubicacion' ? geoloc : null,
+      payMode: mode === 'domicilio' ? payMode : null,
+      payBill: mode === 'domicilio' && payMode === 'efectivo' ? billValue() : '',
+      lines: cart.map((l) => ({
+        itemId: l.itemId, name: l.name, cat: l.cat, detail: l.detail,
+        extras: l.extras || [], dressings: l.dressings || [],
+        unitPrice: l.unitPrice, qty: l.qty, notes: l.notes || '',
+      })),
+      total: cart.reduce((s, l) => s + l.unitPrice * l.qty, 0),
+    };
+  }
+
+  // Envía el pedido a la comandera vía el Apps Script (no-cors, a ciegas). WhatsApp
+  // sigue siendo el respaldo: si esto falla, el pedido igual llega por el chat.
+  function sendOrderToComandera(order) {
+    const url = feedUrl();
+    if (!url) return; // sin backend: solo WhatsApp
+    try {
+      fetch(url, { method: 'POST', mode: 'no-cors', keepalive: true, body: JSON.stringify({ type: 'order', order }) }).catch(() => {});
+    } catch (e) { /* el WhatsApp cubre el pedido */ }
+  }
+
   function doSend() {
     const text = buildOrderText();
+    // 1) manda el pedido a la comandera (antes de navegar a WhatsApp)
+    sendOrderToComandera(buildOrderPayload());
+
     const num = (cfg.WHATSAPP_NUMBER || '').replace(/\D/g, '');
     const base = num ? `https://wa.me/${num}` : 'https://wa.me/';
     const urlWa = `${base}?text=${encodeURIComponent(text)}`;

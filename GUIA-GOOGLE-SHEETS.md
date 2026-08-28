@@ -18,14 +18,35 @@ copie solo a una **Google Sheet del administrador**, para consultar y hacer grá
 3. Copia y pega **todo** este código:
 
 ```javascript
-// Sirve el MENÚ al link del cliente (pedir.html) en formato JSONP.
-// Así el cliente ve en vivo los precios y "agotado" que edita el mesero.
+// Sirve datos al link/comandera por JSONP (evita CORS).
+//  - ?orders=1  -> pedidos en línea pendientes (para la comandera)
+//  - (si no)    -> el MENÚ en vivo (para el link del cliente)
 function doGet(e) {
   var cb = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : 'callback';
-  var menu = PropertiesService.getScriptProperties().getProperty('MENU') || 'null';
+  var payload;
+  if (e && e.parameter && e.parameter.orders) {
+    payload = JSON.stringify(getPendingOrders());
+  } else {
+    payload = PropertiesService.getScriptProperties().getProperty('MENU') || 'null';
+  }
   return ContentService
-    .createTextOutput(cb + '(' + menu + ')')
+    .createTextOutput(cb + '(' + payload + ')')
     .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+// Lee la hoja "Pedidos" y devuelve solo los pendientes (arreglo de objetos order).
+function getPendingOrders() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Pedidos');
+  if (!sh || sh.getLastRow() < 2) return [];
+  var vals = sh.getDataRange().getValues(); // [Fecha, Id, Cliente, Total, Estado, JSON]
+  var out = [];
+  for (var i = 1; i < vals.length; i++) {
+    if (String(vals[i][4]) === 'pendiente') {
+      try { out.push(JSON.parse(vals[i][5])); } catch (err) { /* fila corrupta: se omite */ }
+    }
+  }
+  return out;
 }
 
 function doPost(e) {
@@ -38,6 +59,36 @@ function doPost(e) {
     if (d && d.type === 'menu') {
       PropertiesService.getScriptProperties().setProperty('MENU', JSON.stringify(d.menu));
       return ContentService.createTextOutput(JSON.stringify({ ok: true, saved: 'menu' }));
+    }
+
+    var ss0 = SpreadsheetApp.getActiveSpreadsheet();
+
+    // El cliente manda un pedido en línea: lo guardamos como "pendiente".
+    if (d && d.type === 'order' && d.order) {
+      var p = ss0.getSheetByName('Pedidos') || ss0.insertSheet('Pedidos');
+      if (p.getLastRow() === 0) p.appendRow(['Fecha', 'Id', 'Cliente', 'Total', 'Estado', 'JSON']);
+      // dedupe: si el id ya existe, no lo agrega otra vez
+      var ex = p.getDataRange().getValues();
+      for (var r = 1; r < ex.length; r++) {
+        if (String(ex[r][1]) === String(d.order.id)) {
+          return ContentService.createTextOutput(JSON.stringify({ ok: true, dup: true }));
+        }
+      }
+      p.appendRow([new Date(), d.order.id, d.order.customerName || '', d.order.total || 0,
+        'pendiente', JSON.stringify(d.order)]);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, saved: 'order' }));
+    }
+
+    // La comandera marca un pedido en línea como aceptado/rechazado.
+    if (d && d.type === 'order_status' && d.id) {
+      var ps = ss0.getSheetByName('Pedidos');
+      if (ps) {
+        var rows = ps.getDataRange().getValues();
+        for (var k = 1; k < rows.length; k++) {
+          if (String(rows[k][1]) === String(d.id)) { ps.getRange(k + 1, 5).setValue(d.status || 'aceptado'); break; }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, saved: 'status' }));
     }
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -98,6 +149,11 @@ function doPost(e) {
   → pega la URL → Guardar**.
 
 ¡Listo! Al **Cerrar el día**, aparecerán filas nuevas en las hojas **"Ventas"** y **"Cierres"**.
+
+> **¿Ya tenías el script conectado de antes?** El código de arriba trae mejoras nuevas
+> (menú en vivo y **pedidos en línea**). Para activarlas, actualiza tu implementación:
+> **Implementar → Gestionar implementaciones → ✏️ editar → Versión: Nueva → Implementar**
+> (así **no cambia la URL**). Sin esto, los pedidos en línea no llegarán a la comandera.
 
 ---
 

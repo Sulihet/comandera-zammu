@@ -185,9 +185,18 @@ main { max-width: 640px; margin: 0 auto; }
   display: flex; background: var(--card); border-top: 1px solid var(--line);
   padding-bottom: var(--safe-b); box-shadow: 0 -2px 12px rgba(0,0,0,.05);
 }
-.nav-btn { flex: 1; border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 600; padding: 8px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.nav-btn { position: relative; flex: 1; border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 600; padding: 8px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .nav-btn span { font-size: 19px; }
 .nav-btn.active { color: var(--accent-ink); }
+.nav-badge { position: absolute; top: 3px; left: 50%; margin-left: 6px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; border-radius: 999px; display: flex; align-items: center; justify-content: center; padding: 0 4px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+
+/* ---------- Pedidos en línea (bandeja) ---------- */
+.online-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.online-head .view-title { margin: 0; }
+.online-head .icon-btn { background: var(--primary); color: var(--on-primary); }
+.online-card { border-left: 4px solid var(--accent); }
+.online-meta { font-size: 13.5px; color: var(--ink); padding: 3px 0; }
+.online-meta a { color: var(--accent-ink); font-weight: 700; }
 
 /* ---------- Modal / Sheet ---------- */
 #modal-root { display: none; }

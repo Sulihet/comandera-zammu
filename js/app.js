@@ -10,6 +10,9 @@
   let editingNum = null; // nº del pedido que se está editando (corrección), o null
   let editingKitchenSig = null; // firma de las líneas de cocina del pedido original (para detectar cambios)
   let editingOriginal = null; // copia íntegra del pedido en edición (para poder cancelar la edición)
+  let onlineOrders = []; // pedidos en línea pendientes (bandeja "En línea")
+  let onlinePollTimer = null;
+  let currentView = 'pedido';
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -42,6 +45,16 @@
   };
   const statusOf = (o) => (o && STATUS_META[o.status]) ? o.status : 'preparacion'; // compat pedidos viejos
   const nextStatus = (s) => ORDER_STATUS[(ORDER_STATUS.indexOf(statusOf({ status: s })) + 1) % ORDER_STATUS.length];
+
+  // Etiqueta del modo de servicio. Cubre el mesero (aqui/llevar) y los pedidos en
+  // línea del cliente (recoger/domicilio).
+  const SERVICE_META = {
+    aqui:      { icon: '🍽️', label: 'Comer aquí' },
+    llevar:    { icon: '🥡', label: 'Para llevar' },
+    recoger:   { icon: '🥡', label: 'Recoger' },
+    domicilio: { icon: '🛵', label: 'A domicilio' },
+  };
+  const serviceMeta = (m) => SERVICE_META[m] || SERVICE_META.aqui;
 
   // ---------- Cálculo de precio / detalle ----------
   // Fuente de verdad compartida con el link del cliente (js/menu-logic.js), para
@@ -237,8 +250,13 @@
   function buildWhatsappText(order) {
     const d = new Date(order.ts);
     const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    const modeLabel = order.serviceMode === 'llevar' ? '🥡 PARA LLEVAR' : '🍽️ COMER AQUÍ';
-    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}${order.customerName ? ' — 👤 ' + order.customerName : ''}* · ${hora}\n*${modeLabel}*\n`;
+    const sm = serviceMeta(order.serviceMode);
+    let t = `🐶 *ZAMMU WAIFUU*\n*Pedido #${order.num}${order.corrected ? ' — ✏️ CORRECCIÓN' : ''}${order.customerName ? ' — 👤 ' + order.customerName : ''}* · ${hora}\n*${sm.icon} ${sm.label.toUpperCase()}*\n`;
+    // pedido en línea a domicilio: la dirección/ubicación ayuda a quien reparte
+    if (order.serviceMode === 'domicilio') {
+      if (order.address) t += `📍 ${order.address}${order.reference ? ` (${order.reference})` : ''}\n`;
+      if (order.geoloc) t += `🗺️ https://maps.google.com/?q=${order.geoloc.lat},${order.geoloc.lng}\n`;
+    }
 
     // solo las líneas que cocina prepara (excluye hot-dog)
     const groups = {};
@@ -258,6 +276,7 @@
       const tieneNota = !!(l.notes && l.notes.trim());
       // hamburguesa sin comentarios = con todo (así se avisa a cocina)
       if (esHamburguesa && !tieneNota) s += `   ✅ Con todo\n`;
+      if (l.dressings && l.dressings.length) s += `   🧂 Aderezos: ${l.dressings.join(', ')}\n`;
       if (l.extras && l.extras.length) s += `   ➕ ${l.extras.map(extraLabel).join(', ')}\n`;
       if (l.notes) s += `   📝 ${l.notes}\n`;
       return s;
@@ -411,7 +430,7 @@
       orders.forEach((o) => {
         const d = new Date(o.ts);
         const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        const mode = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+        const mode = serviceMeta(o.serviceMode).icon;
         const cli = o.customerName ? ` · 👤 ${o.customerName}` : '';
         t += `\n*#${o.num}${o.corrected ? ' ✏️' : ''}*${cli} · ${hora} · ${mode} · ${money(o.total)}\n`;
         o.lines.forEach((l) => {
@@ -579,7 +598,7 @@
       const d = new Date(o.ts);
       const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       const resumen = o.lines.map((l) => `${l.qty}× ${l.name}`).join(', ');
-      const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+      const modeIcon = serviceMeta(o.serviceMode).icon;
       const cliente = esc(o.customerName || '—');
       const st = statusOf(o);
       const statusChip = o.canceled ? '' :
@@ -614,7 +633,7 @@
           <div class="order-detail" data-detail="${o.id}" hidden>
             ${detailLines}
             <div class="detail-foot">
-              <span>👤 ${cliente} · ${o.serviceMode === 'llevar' ? '🥡 Para llevar' : '🍽️ Comer aquí'}</span>
+              <span>👤 ${cliente} · ${serviceMeta(o.serviceMode).icon} ${serviceMeta(o.serviceMode).label}</span>
               <strong>Total ${money(o.total)}</strong>
             </div>
             ${o.canceled ? '<div class="tag">Cancelado</div>' : `
@@ -803,7 +822,7 @@
         ${c.orders.map((o) => {
           const d = new Date(o.ts);
           const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-          const modeIcon = o.serviceMode === 'llevar' ? '🥡' : '🍽️';
+          const modeIcon = serviceMeta(o.serviceMode).icon;
           const cli = o.customerName ? ` · 👤 ${esc(o.customerName)}` : '';
           const lines = o.lines.map((l) => `<div class="hist-line">• ${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}${(l.extras && l.extras.length) ? ` ➕ ${esc(l.extras.join(', '))}` : ''}${l.notes ? ` 📝 ${esc(l.notes)}` : ''}</div>`).join('');
           return `<div class="hist-order"><div class="hist-order-head">#${o.num}${o.corrected ? ' ✏️' : ''}${cli} · ${hora} · ${modeIcon} · ${money(o.total)}</div>${lines}</div>`;
@@ -825,6 +844,191 @@
           </div>
         </div>`;
     }).join('');
+  }
+
+  // ==========================================================
+  //  VISTA: PEDIDOS EN LÍNEA (bandeja de entrada del link del cliente)
+  // ==========================================================
+  // Lee datos del Apps Script por JSONP (igual que el link lee el menú).
+  function fetchJsonp(url, done) {
+    const cbName = 'zwCb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    let finished = false;
+    const s = document.createElement('script');
+    const timer = setTimeout(() => finish(null), 8000);
+    function finish(data) {
+      if (finished) return; finished = true;
+      clearTimeout(timer);
+      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+      if (s.parentNode) s.parentNode.removeChild(s);
+      done(data);
+    }
+    window[cbName] = (data) => finish(data);
+    s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + cbName + '&t=' + Date.now();
+    s.onerror = () => finish(null);
+    document.head.appendChild(s);
+  }
+
+  function fetchOnlineOrders() {
+    const url = (config.sheetsUrl || '').trim();
+    if (!url) { onlineOrders = []; updateOnlineBadge(); return; }
+    const feed = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'orders=1';
+    fetchJsonp(feed, (data) => {
+      if (!Array.isArray(data)) return; // timeout/sin red: conserva lo que había
+      const done = Store.getOnlineDone();
+      onlineOrders = data.filter((o) => o && o.id && done.indexOf(o.id) < 0);
+      updateOnlineBadge();
+      if (currentView === 'online') renderOnline();
+    });
+  }
+
+  function updateOnlineBadge() {
+    const btn = document.querySelector('.nav-btn[data-view="online"]');
+    if (!btn) return;
+    let b = btn.querySelector('.nav-badge');
+    const n = onlineOrders.length;
+    if (n > 0) {
+      if (!b) { b = document.createElement('span'); b.className = 'nav-badge'; btn.appendChild(b); }
+      b.textContent = n > 9 ? '9+' : String(n);
+      b.hidden = false;
+    } else if (b) { b.hidden = true; }
+  }
+
+  // saca un pedido de la bandeja (local) y marca su estado en el backend
+  function markOnline(id, status) {
+    Store.markOnlineDone(id);
+    onlineOrders = onlineOrders.filter((o) => o.id !== id);
+    postOrderStatus(id, status);
+    updateOnlineBadge();
+  }
+
+  function postOrderStatus(id, status) {
+    const url = (config.sheetsUrl || '').trim();
+    if (!url) return;
+    try { fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'order_status', id, status }) }).catch(() => {}); }
+    catch (e) { /* se reintenta al refrescar */ }
+  }
+
+  const lineTotal = (o) => (o.total != null ? o.total : (o.lines || []).reduce((s, l) => s + l.unitPrice * l.qty, 0));
+
+  function renderOnline() {
+    const box = $('#online-list');
+    if (!box) return;
+    if (!(config.sheetsUrl || '').trim()) {
+      box.innerHTML = '<p class="empty">Conecta tu Google Sheets en ⚙️ Ajustes para recibir aquí los pedidos del link.</p>';
+      return;
+    }
+    if (!onlineOrders.length) {
+      box.innerHTML = '<p class="empty">Sin pedidos en línea por ahora. Los nuevos aparecen aquí solos. 📥</p>';
+      return;
+    }
+    box.innerHTML = onlineOrders.slice().reverse().map((o) => {
+      const d = new Date(o.ts);
+      const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      const sm = serviceMeta(o.serviceMode);
+      const total = lineTotal(o);
+      const resumen = (o.lines || []).map((l) => `${l.qty}× ${l.name}`).join(', ');
+      const detailLines = (o.lines || []).map((l) => `
+        <div class="detail-line">
+          <span class="q">${l.qty}×</span>
+          <div>
+            <div class="cart-name">${esc(l.name)}</div>
+            ${l.detail ? `<div class="cart-detail">${esc(l.detail)}</div>` : ''}
+            ${(l.extras && l.extras.length) ? `<div class="cart-detail">➕ ${esc(l.extras.join(', '))}</div>` : ''}
+            ${(l.dressings && l.dressings.length) ? `<div class="cart-detail">🧂 ${esc(l.dressings.join(', '))}</div>` : ''}
+            ${l.notes ? `<div class="cart-note">📝 ${esc(l.notes)}</div>` : ''}
+          </div>
+          <span>${money(l.unitPrice * l.qty)}</span>
+        </div>`).join('');
+
+      let entrega = `<div class="online-meta"><b>${sm.icon} ${sm.label}</b></div>`;
+      if (o.serviceMode === 'domicilio') {
+        if (o.address) entrega += `<div class="online-meta">📍 ${esc(o.address)}${o.reference ? ` · 🔎 ${esc(o.reference)}` : ''}</div>`;
+        if (o.geoloc) entrega += `<div class="online-meta">🗺️ <a href="https://maps.google.com/?q=${o.geoloc.lat},${o.geoloc.lng}" target="_blank" rel="noopener">Ver ubicación en el mapa</a></div>`;
+      }
+      let pago = '';
+      if (o.serviceMode === 'domicilio' && o.payMode) {
+        const pic = o.payMode === 'efectivo' ? '💵' : '🏦';
+        const nm = o.payMode === 'efectivo' ? 'Efectivo' : 'Transferencia';
+        pago = `<div class="online-meta">${pic} Pago: ${nm}${o.payBill ? ` · ${esc(o.payBill)}` : ''}</div>`;
+      }
+
+      return `<div class="order-card online-card">
+          <div class="order-head" data-otoggle="${o.id}">
+            <div>
+              <strong>👤 ${esc(o.customerName || '—')}</strong> · ${hora} · ${sm.icon} ${money(total)}
+              <div class="order-sum">${esc(resumen)}</div>
+            </div>
+            <span class="chevron">▸</span>
+          </div>
+          <div class="order-detail" hidden>
+            ${detailLines}
+            ${entrega}${pago}
+            <div class="detail-foot"><span>Revisa y decide 👇</span><strong>Total ${money(total)}</strong></div>
+            <button class="act-btn act-resend full" data-oaccept="${o.id}">✅ Aceptar y enviar a cocina</button>
+            <div class="order-actions">
+              <button class="act-btn act-edit" data-oedit="${o.id}">✏️ Editar</button>
+              <button class="act-btn act-cancel" data-oreject="${o.id}">✖ Rechazar</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Convierte un pedido en línea en un pedido normal de la comandera y lo manda a cocina.
+  async function acceptOnline(id) {
+    const src = onlineOrders.find((o) => o.id === id);
+    if (!src) return;
+    config.lastOrderNum = (config.lastOrderNum || 0) + 1;
+    const order = {
+      id: uid(), num: config.lastOrderNum, ts: src.ts || Date.now(),
+      serviceMode: src.serviceMode,
+      customerName: src.customerName || '',
+      address: src.address || '', reference: src.reference || '', geoloc: src.geoloc || null,
+      payMode: src.payMode || null, payBill: src.payBill || '',
+      lines: Store.clone(src.lines || []),
+      total: lineTotal(src),
+      canceled: false, status: 'preparacion', online: true,
+    };
+    const orders = Store.getOrders();
+    orders.push(order);
+    Store.saveOrders(orders);
+    Store.saveConfig(config);
+    markOnline(id, 'aceptado');
+    renderOnline();
+
+    if (orderHasKitchen(order.lines)) {
+      const ok = await shareToKitchen(buildWhatsappText(order));
+      markKitchenSent(order.id, ok);
+      toast(ok ? `Pedido #${order.num} aceptado y enviado a cocina ✅`
+               : `⚠️ Pedido #${order.num} guardado, pero NO se envió a cocina (reenvíalo en 💰 Cierre)`);
+    } else {
+      toast(`Pedido #${order.num} aceptado ✅ (no va a cocina)`);
+    }
+    renderCierre();
+  }
+
+  function editOnline(id) {
+    if (cart.length) { alert('Tienes un pedido en curso. Envíalo o quítalo antes de editar otro.'); return; }
+    const src = onlineOrders.find((o) => o.id === id);
+    if (!src) return;
+    cart = Store.clone(src.lines || []);
+    Store.saveCart(cart);
+    // el modo del cliente (recoger/domicilio) se mapea a "para llevar" para el flujo del mesero
+    config.serviceMode = (src.serviceMode === 'aqui' || src.serviceMode === 'llevar') ? src.serviceMode : 'llevar';
+    config.customerName = src.customerName || '';
+    Store.saveConfig(config);
+    markOnline(id, 'aceptado');
+    switchView('pedido');
+    toast('Pedido cargado: ajústalo y envíalo 👇');
+  }
+
+  function rejectOnline(id) {
+    const src = onlineOrders.find((o) => o.id === id);
+    if (!src) return;
+    if (!confirm(`¿Rechazar el pedido en línea de ${src.customerName || 'este cliente'}?`)) return;
+    markOnline(id, 'rechazado');
+    renderOnline();
+    toast('Pedido en línea rechazado');
   }
 
   // ==========================================================
@@ -1032,12 +1236,14 @@
   //  NAVEGACIÓN Y EVENTOS GLOBALES
   // ==========================================================
   function switchView(view) {
+    currentView = view;
     $$('.view').forEach((v) => v.classList.toggle('active', v.id === `view-${view}`));
     $$('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
     if (view === 'pedido') renderPedido();
     if (view === 'menu') renderMenuEditor();
     if (view === 'cierre') renderCierre();
     if (view === 'historial') renderHistorial();
+    if (view === 'online') { renderOnline(); fetchOnlineOrders(); }
   }
 
   function bind() {
@@ -1164,12 +1370,27 @@
       const h = e.target.closest('[data-htoggle]');
       if (h) toggleCard(h);
     });
+
+    // pedidos en línea: refrescar, expandir, aceptar/editar/rechazar
+    $('#view-online').addEventListener('click', (e) => {
+      if (e.target.closest('#btn-refresh-online')) { toast('Buscando pedidos nuevos…'); fetchOnlineOrders(); return; }
+      const accept = e.target.closest('[data-oaccept]');
+      const edit = e.target.closest('[data-oedit]');
+      const reject = e.target.closest('[data-oreject]');
+      const toggle = e.target.closest('[data-otoggle]');
+      if (accept) { acceptOnline(accept.dataset.oaccept); return; }
+      if (edit) { editOnline(edit.dataset.oedit); return; }
+      if (reject) { rejectOnline(reject.dataset.oreject); return; }
+      if (toggle) toggleCard(toggle);
+    });
   }
 
   // ---------- Arranque ----------
   bind();
   switchView('pedido');
   publishMenu(); // si hay Sheets conectado, deja el link del cliente al día
+  fetchOnlineOrders(); // trae pedidos en línea pendientes al abrir
+  onlinePollTimer = setInterval(fetchOnlineOrders, 20000); // y revisa cada ~20 s
 
   // registra el service worker (PWA) si es posible
   if ('serviceWorker' in navigator) {

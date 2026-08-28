@@ -61,6 +61,16 @@
       <button id="btn-close-day" class="btn-outline big">🔒 Cerrar día</button>
     </section>
 
+    <!-- ================= PEDIDOS EN LÍNEA ================= -->
+    <section id="view-online" class="view">
+      <div class="online-head">
+        <h1 class="view-title">Pedidos en línea</h1>
+        <button id="btn-refresh-online" class="icon-btn" aria-label="Refrescar">🔄</button>
+      </div>
+      <p class="view-sub">Pedidos del link del cliente. Revísalos y mándalos a cocina.</p>
+      <div id="online-list"></div>
+    </section>
+
     <!-- ================= HISTORIAL ================= -->
     <section id="view-historial" class="view">
       <h1 class="view-title">Historial</h1>
@@ -71,6 +81,7 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" data-view="pedido"><span>🛎️</span>Pedido</button>
+    <button class="nav-btn" data-view="online"><span>📥</span>En línea</button>
     <button class="nav-btn" data-view="menu"><span>📋</span>Menú</button>
     <button class="nav-btn" data-view="cierre"><span>💰</span>Cierre</button>
     <button class="nav-btn" data-view="historial"><span>📚</span>Historial</button>

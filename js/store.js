@@ -2,7 +2,7 @@
 const Store = (() => {
   const K = {
     menu: 'zw_menu', orders: 'zw_orders', config: 'zw_config',
-    closes: 'zw_closes', cart: 'zw_cart',
+    closes: 'zw_closes', cart: 'zw_cart', onlineDone: 'zw_online_done',
   };
 
   function load(key, fallback) {
@@ -103,6 +103,15 @@ const Store = (() => {
   function getCart() { return load(K.cart, []); }
   function saveCart(c) { save(K.cart, c); }
 
+  // --- Pedidos en línea ya procesados (aceptados/rechazados) ---
+  // Guarda solo los ids, para no re-mostrar un pedido aunque el backend tarde
+  // en marcarlo. Se recorta para no crecer sin límite.
+  function getOnlineDone() { return load(K.onlineDone, []); }
+  function markOnlineDone(id) {
+    const arr = getOnlineDone();
+    if (!arr.includes(id)) { arr.push(id); save(K.onlineDone, arr.slice(-300)); }
+  }
+
   return {
     todayStr, clone,
     getMenu, saveMenu, resetMenu,
@@ -110,5 +119,6 @@ const Store = (() => {
     getOrders, saveOrders,
     getCloses, saveCloses,
     getCart, saveCart,
+    getOnlineDone, markOnlineDone,
   };
 })();

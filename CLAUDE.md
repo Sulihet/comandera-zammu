@@ -269,6 +269,22 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   empacado (`DEFAULT_MENU`). El link también acepta `?feed=`/`#feed=` para activar sin
   tocar código. Ver `GUIA-GOOGLE-SHEETS.md` (Paso 5) para el Apps Script y el mensaje de
   bienvenida.
+- **Pedidos en línea directo a la comandera** (spec/plan `2026-08-28-pedidos-en-linea-a-
+  comandera`): al confirmar en el link, `doSend()` en `pedir.js` **POSTea el pedido**
+  (`buildOrderPayload()` → `{type:'order', order}`, no-cors + `keepalive`) al Apps Script
+  **además** de abrir WhatsApp (copia del cliente). El Apps Script lo guarda en la hoja
+  **"Pedidos"** como `pendiente`; la comandera lo lee por **JSONP** (`?orders=1`,
+  `fetchJsonp` en `app.js`) cada ~20s en la bandeja **"📥 En línea"** (5ª pestaña) con
+  **globito** (`nav-badge`). El mesero revisa y decide: **`acceptOnline`** (lo vuelve
+  pedido normal con `num`, cuenta en el cierre, y lo manda a cocina con
+  `shareToKitchen`/`buildWhatsappText`), **`editOnline`** (lo carga al carrito) o
+  **`rejectOnline`**. Cada acción marca el estado en el backend (`postOrderStatus`,
+  `type:'order_status'`) y guarda el id en `Store.getOnlineDone/markOnlineDone`
+  (`zw_online_done`) para no re-mostrarlo. Sin duplicados (id único + dedupe en backend +
+  set `done`). **Respaldo:** si el POST falla o no hay `sheetsUrl`, todo sigue como hoy
+  (solo WhatsApp). `serviceMeta()` mapea `recoger/domicilio` a etiquetas; `buildWhatsappText`
+  incluye `🧂 Aderezos` y (a domicilio) la dirección. Requiere que el admin **re-implemente**
+  el Apps Script (ver `GUIA-GOOGLE-SHEETS.md`). Futuro 🅑: sonido/aviso al cliente/tiempo real.
 - **PWA local sin backend** en vez de app nativa o app con servidor: hay un solo
   celular tomando pedidos y wifi estable, así que un backend añade costo y
   complejidad sin beneficio. Reevaluar solo si en el futuro hay más de un mesero.
