@@ -326,10 +326,14 @@
           </div>
         </div>` : '';
 
+      // ejemplo de la nota según la categoría (las banderillas no llevan cebolla/queso)
+      const notePlaceholder = (item.cat === 'salada' || item.cat === 'dulce')
+        ? 'ej. alguna nota o petición especial'
+        : 'ej. sin cebolla, extra queso';
       const notesHtml = item.notes ? `
         <div class="field">
           <label>Nota <small>(modificaciones)</small></label>
-          <input type="text" id="sheet-notes" placeholder="ej. sin cebolla, extra queso" value="${esc(notes)}">
+          <input type="text" id="sheet-notes" placeholder="${notePlaceholder}" value="${esc(notes)}">
         </div>` : '';
 
       const unit = MenuLogic.calcUnitPrice(item, variant, selections, extras);
