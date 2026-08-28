@@ -269,6 +269,7 @@
               <div class="cart-name">${esc(l.name)}</div>
               ${l.detail ? `<div class="cart-detail">${esc(l.detail)}</div>` : ''}
               ${(l.extras && l.extras.length) ? `<div class="cart-detail">➕ ${esc(l.extras.join(', '))}</div>` : ''}
+              ${(l.dressings && l.dressings.length) ? `<div class="cart-detail">🧂 ${esc(l.dressings.join(', '))}</div>` : ''}
               ${l.notes ? `<div class="cart-note">📝 ${esc(l.notes)}</div>` : ''}
             </div>
           </div>
@@ -292,6 +293,9 @@
     const selections = {};
     (item.choices || []).forEach((ch) => { if (ch.required) selections[ch.id] = ch.options[0].id; });
     const extras = new Set();
+    // Aderezos: solo banderillas (salada/dulce), solo en el link del cliente.
+    const ader = (cfg.ADEREZOS && (item.cat === 'salada' || item.cat === 'dulce')) ? cfg.ADEREZOS[item.cat] : null;
+    const dressings = new Set();
     let qty = 1;
     let notes = '';
 
@@ -326,6 +330,16 @@
           </div>
         </div>` : '';
 
+      const aderezosHtml = ader ? `
+        <div class="field">
+          <label>Aderezos <small>(elige hasta ${ader.max}${dressings.size ? ` · ${dressings.size} elegido${dressings.size === 1 ? '' : 's'}` : ''})</small></label>
+          <div class="opt-row">
+            ${ader.list.map((a) =>
+              `<button class="opt ${dressings.has(a) ? 'sel' : ''}" data-ader="${esc(a)}">${esc(a)}</button>`
+            ).join('')}
+          </div>
+        </div>` : '';
+
       // ejemplo de la nota según la categoría (las banderillas no llevan cebolla/queso)
       const notePlaceholder = (item.cat === 'salada' || item.cat === 'dulce')
         ? 'ej. alguna nota o petición especial'
@@ -339,7 +353,7 @@
       const unit = MenuLogic.calcUnitPrice(item, variant, selections, extras);
       body.innerHTML = `
         <h2>${esc(item.name)}</h2>
-        ${variantHtml}${choicesHtml}${extrasHtml}${notesHtml}
+        ${variantHtml}${choicesHtml}${extrasHtml}${aderezosHtml}${notesHtml}
         <div class="field qty-field">
           <label>Cantidad</label>
           <div class="stepper">
@@ -362,6 +376,13 @@
         if (extras.has(id)) extras.delete(id); else extras.add(id);
         draw();
       });
+      $$('[data-ader]', body).forEach((b) => b.onclick = () => {
+        const a = b.dataset.ader;
+        if (dressings.has(a)) { dressings.delete(a); }
+        else if (dressings.size >= ader.max) { toast(`Puedes elegir hasta ${ader.max} aderezos`); return; }
+        else { dressings.add(a); }
+        draw();
+      });
       const notesInput = $('#sheet-notes', body);
       if (notesInput) notesInput.oninput = (e) => { notes = e.target.value; };
       $('#sheet-add', body).onclick = () => {
@@ -371,6 +392,7 @@
           uid: uid(), itemId: item.id, name: item.name, cat: item.cat,
           detail: MenuLogic.buildDetail(item, variant, selections),
           extras: extraNames,
+          dressings: [...dressings],
           unitPrice: MenuLogic.calcUnitPrice(item, variant, selections, extras),
           qty, notes: ni ? ni.value.trim() : '',
         });
@@ -407,6 +429,7 @@
     t += `━━━━━━━━━━\n`;
     cart.forEach((l) => {
       t += `• ${l.qty}× ${l.name}${l.detail ? ` — ${l.detail}` : ''} — ${money(l.unitPrice * l.qty)}\n`;
+      if (l.dressings && l.dressings.length) t += `   🧂 Aderezos: ${l.dressings.join(', ')}\n`;
       if (l.extras && l.extras.length) t += `   ➕ ${l.extras.join(', ')}\n`;
       if (l.notes) t += `   📝 ${l.notes}\n`;
     });
@@ -468,9 +491,10 @@
       pago = `<div class="confirm-sub">${PAY[payMode].ic} Pago: ${esc(pagoTxt)}</div>`;
     }
 
-    const lines = cart.map((l) =>
-      `<div class="confirm-line"><span>${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}</span><b>${money(l.unitPrice * l.qty)}</b></div>`
-    ).join('');
+    const lines = cart.map((l) => {
+      const ader = (l.dressings && l.dressings.length) ? ` · 🧂 ${esc(l.dressings.join(', '))}` : '';
+      return `<div class="confirm-line"><span>${l.qty}× ${esc(l.name)}${l.detail ? ` — ${esc(l.detail)}` : ''}${ader}</span><b>${money(l.unitPrice * l.qty)}</b></div>`;
+    }).join('');
 
     const body = document.createElement('div');
     body.innerHTML = `

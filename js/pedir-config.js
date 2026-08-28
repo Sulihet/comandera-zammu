@@ -26,4 +26,20 @@ const PEDIR_CONFIG = {
     // Recoger o envío a domicilio (el cliente decide). Tarifa por distancia.
     envio: 'Recoge tu pedido o pídelo a domicilio. El costo por distancia corta es de $20, media $30 y larga $40. Al enviar tu pedido te confirmaremos el costo del envío.',
   },
+
+  // Aderezos para banderillas — SOLO en el link del cliente (en el sitio, el
+  // cliente los toma él mismo, por eso NO están en la comandera del mesero).
+  // Por categoría: 'salada' (banderilla salada/coreana) y 'dulce'. Sin costo.
+  ADEREZOS: {
+    salada: {
+      max: 3,
+      list: ['Chipotle', 'Ranch', 'Blue Cheese', 'Tamarindo Habanero', 'Mango Habanero',
+             'Queso Amarillo', 'Valentina', 'Búfalo Wings', 'Mayonesa', 'BBQ',
+             'Mostaza Dulce', 'Sriracha', 'Catsup'],
+    },
+    dulce: {
+      max: 2,
+      list: ['Hershey', 'Lechera'],
+    },
+  },
 };
