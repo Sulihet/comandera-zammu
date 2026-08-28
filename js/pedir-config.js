@@ -11,7 +11,7 @@ const PEDIR_CONFIG = {
   // Dejar VACÍO hasta que el admin lo tenga: mientras, el link usa el menú de
   // respaldo empacado (js/menu-data.js). También se puede activar sin tocar
   // código agregando ?feed=<url> o #feed=<url> al final del link del cliente.
-  MENU_FEED_URL: '',
+  MENU_FEED_URL: 'https://script.google.com/macros/s/AKfycbwa8_rpFDy_xsusNO9yg3xGSXnuSpfMCGHQHXkO0qVCatdL5t69bERwRNMagNmE4IP-7Q/exec',
 
   // Información que ve el cliente en el link (texto libre, editable).
   INFO: {
