@@ -232,6 +232,8 @@ main { max-width: 640px; margin: 0 auto; }
 .howto-steps { margin: 0; padding-left: 22px; }
 .howto-steps li { font-size: 14px; line-height: 1.4; padding: 4px 0; }
 .howto-steps li::marker { color: var(--accent-ink); font-weight: 800; }
+.howto-envio { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; line-height: 1.4; color: var(--ink); }
+.menu-title { font-size: 20px; margin: 2px 0 12px; color: var(--accent-ink); }
 .info-row a { color: var(--accent-ink); font-weight: 700; text-decoration: underline; }
 .btn-outline.loc-on { border-color: var(--green); color: var(--green); background: #eef8f0; }
 /* botones Recoger / A domicilio con subtítulo explicativo */

@@ -107,7 +107,6 @@
       ['📞', 'Teléfono', i.tel, i.tel ? 'tel:' + i.tel.replace(/\s+/g, '') : null],
       ['📸', 'Instagram', i.ig, i.igUrl],
       ['🎵', 'TikTok', i.tiktok, i.tiktokUrl],
-      ['🛵', 'Envío', i.envio, null],
     ].filter((r) => r[2]);
     $('#info-card').innerHTML = `<h2>Información</h2>` + rows.map((r) => {
       const val = r[3]
@@ -115,6 +114,10 @@
         : esc(r[2]);
       return `<div class="info-row"><span class="ic">${r[0]}</span><span><b>${esc(r[1])}:</b> ${val}</span></div>`;
     }).join('');
+
+    // El envío va como nota en la caja de "¿Cómo hago mi pedido?".
+    const env = $('#howto-envio');
+    if (env) env.innerHTML = i.envio ? `🛵 <b>Envío:</b> ${esc(i.envio)}` : '';
   }
 
   // ---------- Menú ----------
