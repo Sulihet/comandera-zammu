@@ -37,11 +37,18 @@ const MenuLogic = (() => {
     return parts.join(' · ');
   }
 
-  // Ejemplo (placeholder) de la nota según la categoría del platillo. Compartido
-  // por la comandera y el link para que el ejemplo sea el mismo en los dos.
-  function notePlaceholder(cat) {
+  // Ejemplo (placeholder) de la nota según el platillo. Compartido por la comandera
+  // y el link para que el ejemplo sea el mismo en los dos. Recibe el item completo
+  // para poder distinguir las papas dentro de Fast Food (sin confundir el hot dog).
+  function notePlaceholder(item) {
+    const cat = item && item.cat;
+    const name = (item && item.name) || '';
     if (cat === 'salada' || cat === 'dulce') return 'ej. alguna nota o petición especial';
-    if (cat === 'fastfood') return 'ej. sin cebolla, sin picante';
+    if (cat === 'fastfood') {
+      const esPapas = (item && item.id === 'papas_francesa') || (/papas/i.test(name) && !/hot\s*dog/i.test(name));
+      if (esPapas) return 'ej. bien doradas, sin sal, con cátsup';
+      return 'ej. sin cebolla, sin picante';
+    }
     if (cat === 'coreano') return 'ej. sin cebollín, sin ajonjolí';
     return 'ej. alguna nota o petición especial';
   }

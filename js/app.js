@@ -179,7 +179,7 @@
       const notesHtml = item.notes ? `
         <div class="field">
           <label>Nota para cocina <small>(modificaciones)</small></label>
-          <input type="text" id="sheet-notes" placeholder="${MenuLogic.notePlaceholder(item.cat)}" value="${esc(notes)}">
+          <input type="text" id="sheet-notes" placeholder="${MenuLogic.notePlaceholder(item)}" value="${esc(notes)}">
         </div>` : '';
 
       const unit = calcUnitPrice(item, variant, selections, extras);

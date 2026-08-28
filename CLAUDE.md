@@ -127,8 +127,10 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   dirección, tel, IG, envío).
 - `js/menu-logic.js` — lógica **pura** compartida por la comandera y el link (una sola
   fuente de verdad): `MenuLogic.calcUnitPrice`, `buildDetail`, y `notePlaceholder(cat)`
-  (ejemplo de la nota según categoría: banderillas "alguna nota o petición especial",
-  fastfood "sin cebolla, sin picante", coreano "sin cebollín, sin ajonjolí"). La cargan
+  (ejemplo de la nota según el platillo: banderillas "alguna nota o petición especial",
+  fastfood "sin cebolla, sin picante", **papas** "bien doradas, sin sal, con cátsup"
+  —detectadas por id/nombre sin confundir el hot dog—, coreano "sin cebollín, sin
+  ajonjolí"). La cargan
   `index.html` y `pedir.html` antes de su JS.
 - `manifest.webmanifest` + `sw.js` — instalable como PWA / cache offline básico.
 - `icon.png` — ícono = **logo real** de Zammu Waifuu (448×448, fondo rosa cuadrado).

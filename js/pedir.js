@@ -343,8 +343,8 @@
           </div>
         </div>` : '';
 
-      // ejemplo de la nota según la categoría (compartido con la comandera)
-      const notePlaceholder = MenuLogic.notePlaceholder(item.cat);
+      // ejemplo de la nota según el platillo (compartido con la comandera)
+      const notePlaceholder = MenuLogic.notePlaceholder(item);
       const notesHtml = item.notes ? `
         <div class="field">
           <label>Nota <small>(modificaciones)</small></label>
