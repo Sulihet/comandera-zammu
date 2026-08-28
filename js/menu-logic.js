@@ -37,5 +37,14 @@ const MenuLogic = (() => {
     return parts.join(' · ');
   }
 
-  return { calcUnitPrice, buildDetail };
+  // Ejemplo (placeholder) de la nota según la categoría del platillo. Compartido
+  // por la comandera y el link para que el ejemplo sea el mismo en los dos.
+  function notePlaceholder(cat) {
+    if (cat === 'salada' || cat === 'dulce') return 'ej. alguna nota o petición especial';
+    if (cat === 'fastfood') return 'ej. sin cebolla, sin picante';
+    if (cat === 'coreano') return 'ej. sin cebollín, sin ajonjolí';
+    return 'ej. alguna nota o petición especial';
+  }
+
+  return { calcUnitPrice, buildDetail, notePlaceholder };
 })();

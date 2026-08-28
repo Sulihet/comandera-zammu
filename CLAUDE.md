@@ -125,9 +125,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - `js/pedir-config.js` — config editable del link: `WHATSAPP_NUMBER` (525569738176),
   `MENU_FEED_URL` (Apps Script del admin; vacío = usa respaldo) e `INFO` (horario,
   dirección, tel, IG, envío).
-- `js/menu-logic.js` — lógica **pura** de precio/detalle (`MenuLogic.calcUnitPrice`,
-  `MenuLogic.buildDetail`) compartida por la comandera y el link (una sola fuente de
-  verdad del precio). La cargan `index.html` y `pedir.html` antes de su JS.
+- `js/menu-logic.js` — lógica **pura** compartida por la comandera y el link (una sola
+  fuente de verdad): `MenuLogic.calcUnitPrice`, `buildDetail`, y `notePlaceholder(cat)`
+  (ejemplo de la nota según categoría: banderillas "alguna nota o petición especial",
+  fastfood "sin cebolla, sin picante", coreano "sin cebollín, sin ajonjolí"). La cargan
+  `index.html` y `pedir.html` antes de su JS.
 - `manifest.webmanifest` + `sw.js` — instalable como PWA / cache offline básico.
 - `icon.png` — ícono = **logo real** de Zammu Waifuu (448×448, fondo rosa cuadrado).
 - `.nojekyll` + `GUIA-PUBLICAR.md` — publicación en GitHub Pages (guía paso a paso sin terminal).
