@@ -236,11 +236,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   y, al enviar, `showConfirm()` muestra una pantalla que repite la elección en grande
   (RECOGER en el local + dirección del local · o ENVÍO A DOMICILIO + dirección/ubicación)
   con "✅ Sí, enviar" / "✏️ Cambiar"; WhatsApp solo se abre al confirmar (`doSend()`).
-  **Tipo de pago** (`renderPayment()`, obligatorio): Efectivo / Transferencia siempre;
-  **Tarjeta solo al Recoger** (no en domicilio; al cambiar a domicilio se resetea). En
-  **domicilio + efectivo** pide "¿Con cuánto pagas?" (Pago justo/$100/$200/$500/$1000)
-  para llevar cambio. El pago va en el mensaje (`💵/🏦/💳 Pago: … — paga con $X`) y en la
-  confirmación. El mensaje sigue siendo
+  **Tipo de pago** (`renderPayment()`): SOLO en domicilio (al recoger se paga en el
+  local, no se pregunta); Efectivo / Transferencia. En **efectivo** pide "¿Con cuánto
+  pagas?" (Pago justo/$100/$200/$500/**Otro**→cantidad a mano, ver `billValue()`) para
+  llevar cambio. Aparece **después del total** del pedido (flujo). Va en el mensaje
+  (`💵/🏦 Pago: … — paga con $X`) y en la confirmación. El mensaje sigue siendo
   distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
   admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
   cero recaptura. No usa WhatsApp API de paga.
