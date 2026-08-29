@@ -27,6 +27,16 @@ const PEDIR_CONFIG = {
     envio: 'Recoge tu pedido o pídelo a domicilio. El costo por distancia corta es de $20, media $30 y larga $40. Al enviar tu pedido te confirmaremos el costo del envío.',
   },
 
+  // Datos para pago por TRANSFERENCIA (cuenta del negocio para RECIBIR pagos).
+  // Se envían en el mensaje del cliente cuando elige "Transferencia". Editables.
+  TRANSFER: {
+    banco: 'Mercado Pago',
+    clabe: '722969010489818222',
+    titular: 'Federico Rodríguez',
+    // A qué número mandar el comprobante (por defecto, el mismo WhatsApp del negocio).
+    comprobanteTel: '55 6973 8176',
+  },
+
   // Aderezos para banderillas — SOLO en el link del cliente (en el sitio, el
   // cliente los toma él mismo, por eso NO están en la comandera del mesero).
   // Por categoría: 'salada' (banderilla salada/coreana) y 'dulce'. Sin costo.

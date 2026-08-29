@@ -181,7 +181,12 @@
       billBlock = `<div class="field"><label>¿Con cuánto pagas? <small>(para llevarte cambio)</small></label><div class="opt-row">${chips}</div>${otherInput}</div>`;
     }
 
-    wrap.innerHTML = `<div class="field"><label>¿Cómo vas a pagar?</label><div class="service-mode pay-seg">${segs}</div></div>${billBlock}`;
+    // al elegir transferencia: avisamos que los datos van en el WhatsApp
+    let transferNote = '';
+    if (payMode === 'transferencia') {
+      transferNote = `<div class="pedir-note">📲 Al enviar, te llegarán por WhatsApp los <b>datos para transferir</b>. Transfiere y manda tu comprobante; preparamos tu pedido al confirmar el pago.</div>`;
+    }
+    wrap.innerHTML = `<div class="field"><label>¿Cómo vas a pagar?</label><div class="service-mode pay-seg">${segs}</div></div>${billBlock}${transferNote}`;
     $$('[data-pay]', wrap).forEach((b) => b.onclick = () => {
       payMode = b.dataset.pay;
       if (payMode !== 'efectivo') { payBill = ''; payBillOther = ''; } // el cambio solo aplica a efectivo
@@ -437,6 +442,15 @@
         else { const bv = billValue(); if (bv) t += ` — paga con ${bv} (llevar cambio)`; }
       }
       t += `\n`;
+      // datos de transferencia (para que el cliente pueda pagar antes)
+      const tr = cfg.TRANSFER;
+      if (payMode === 'transferencia' && tr && tr.clabe) {
+        t += `➡️ *Transfiere a:*\n`;
+        if (tr.banco) t += `   • Banco: ${tr.banco}\n`;
+        t += `   • CLABE: ${tr.clabe}\n`;
+        if (tr.titular) t += `   • Titular: ${tr.titular}\n`;
+        t += `📸 Transfiere y manda tu *comprobante*${tr.comprobanteTel ? ` al ${tr.comprobanteTel}` : ''}; tu pedido se prepara al confirmar el pago.\n`;
+      }
     }
     t += `━━━━━━━━━━\n`;
     cart.forEach((l) => {
@@ -501,6 +515,9 @@
         else { const bv = billValue(); if (bv) pagoTxt += ` · paga con ${bv}`; }
       }
       pago = `<div class="confirm-sub">${PAY[payMode].ic} Pago: ${esc(pagoTxt)}</div>`;
+      if (payMode === 'transferencia') {
+        pago += `<div class="confirm-sub" style="font-size:12.5px;color:var(--muted)">📲 Los datos para transferir van en tu WhatsApp. Transfiere y manda tu comprobante; preparamos tu pedido al confirmar el pago.</div>`;
+      }
     }
 
     const lines = cart.map((l) => {

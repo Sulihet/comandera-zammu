@@ -263,8 +263,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   **Tipo de pago** (`renderPayment()`): SOLO en domicilio (al recoger se paga en el
   local, no se pregunta); Efectivo / Transferencia. En **efectivo** pide "¿Con cuánto
   pagas?" (Pago justo/$100/$200/$500/**Otro**→cantidad a mano, ver `billValue()`) para
-  llevar cambio. Aparece **después del total** del pedido (flujo). Va en el mensaje
-  (`💵/🏦 Pago: … — paga con $X`) y en la confirmación. El mensaje sigue siendo
+  llevar cambio. En **transferencia**, una nota avisa que los datos llegan por WhatsApp
+  y el mensaje incluye el bloque de **`PEDIR_CONFIG.TRANSFER`** (banco/CLABE/titular +
+  pedir comprobante); el cliente transfiere antes y la comandera marca el pedido en línea
+  con "⏳ Verifica el comprobante antes de aceptar". Aparece **después del total** del
+  pedido (flujo). Va en el mensaje (`💵/🏦 Pago: …`) y en la confirmación. El mensaje sigue siendo
   distinto del de cocina) para que el cliente solo lo envíe. Elimina los 3 dolores del
   admin: respuesta instantánea en pico, cero ratificación (el cliente elige lo exacto),
   cero recaptura. No usa WhatsApp API de paga.

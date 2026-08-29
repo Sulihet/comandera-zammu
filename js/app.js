@@ -970,6 +970,7 @@
         const pic = o.payMode === 'efectivo' ? '💵' : '🏦';
         const nm = o.payMode === 'efectivo' ? 'Efectivo' : 'Transferencia';
         pago = `<div class="online-meta">${pic} Pago: ${nm}${o.payBill ? ` · ${esc(o.payBill)}` : ''}</div>`;
+        if (o.payMode === 'transferencia') pago += `<div class="online-meta" style="color:var(--danger)">⏳ Verifica el comprobante antes de aceptar.</div>`;
       }
 
       return `<div class="order-card online-card">
