@@ -110,6 +110,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   opciones obligatorias empiezan **sin elegir** (ningún botón resaltado); el botón
   "Agregar" nace **deshabilitado** ("Elige las opciones para continuar") y se activa
   (`complete`) cuando ya se eligió la variante (si tiene) y todas las opciones requeridas.
+  En las opciones **opcionales**, el botón **"Ninguno" tampoco se resalta** hasta que el
+  cliente toca esa sección (flag `touched` por choice).
 - **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
   Gourmet $35 (pistacho/cheese cake/frutos rojos) · Paquete 4 baos $105 ·
   Paquete 6 baos $165.

@@ -294,6 +294,7 @@
   function openItemSheet(item) {
     let variant = null;                 // nada preseleccionado: el cliente elige
     const selections = {};              // (idem para las opciones obligatorias)
+    const touched = {};                 // choices que el cliente ya tocó (para "Ninguno")
     // hamburguesas/hot dog: el Tipo (Con carne/Vegetariana) va ANTES que las papas
     const choicesFirst = !!(item.variants && (item.choices || []).some((ch) => ch.id === 'tipo'));
     const extras = new Set();
@@ -318,7 +319,7 @@
         <div class="field">
           <label>${esc(ch.name)}${ch.required ? '' : ' <small>(opcional)</small>'}</label>
           <div class="opt-row">
-            ${!ch.required ? `<button class="opt ${!selections[ch.id] ? 'sel' : ''}" data-choice="${ch.id}" data-opt="">Ninguno</button>` : ''}
+            ${!ch.required ? `<button class="opt ${(touched[ch.id] && !selections[ch.id]) ? 'sel' : ''}" data-choice="${ch.id}" data-opt="">Ninguno</button>` : ''}
             ${ch.options.map((o) =>
               `<button class="opt ${selections[ch.id] === o.id ? 'sel' : ''}" data-choice="${ch.id}" data-opt="${o.id}">${esc(o.name)}${o.overridePrice != null ? `<small>${money(o.overridePrice)}</small>` : ''}</button>`
             ).join('')}
@@ -375,6 +376,7 @@
 
       $$('[data-variant]', body).forEach((b) => b.onclick = () => { variant = item.variants.find((v) => v.id === b.dataset.variant); draw(); });
       $$('[data-choice]', body).forEach((b) => b.onclick = () => {
+        touched[b.dataset.choice] = true;
         selections[b.dataset.choice] = b.dataset.opt || null;
         if (!b.dataset.opt) delete selections[b.dataset.choice];
         draw();
