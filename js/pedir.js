@@ -184,7 +184,7 @@
     // al elegir transferencia: avisamos que los datos van en el WhatsApp
     let transferNote = '';
     if (payMode === 'transferencia') {
-      transferNote = `<div class="pedir-note">💛 Cuando envíes tu pedido, en <b>WhatsApp</b> te aparecerán los <b>datos para transferir</b>. Haz tu pago y mándanos tu comprobante por WhatsApp; con eso empezamos a preparar tu antojo 🐶✨</div>`;
+      transferNote = `<div class="pedir-note">Al enviar, en WhatsApp te aparecerán los datos para transferir. Haz tu pago y mándanos tu comprobante por WhatsApp para empezar a preparar tu pedido.</div>`;
     }
     wrap.innerHTML = `<div class="field"><label>¿Cómo vas a pagar?</label><div class="service-mode pay-seg">${segs}</div></div>${billBlock}${transferNote}`;
     $$('[data-pay]', wrap).forEach((b) => b.onclick = () => {
@@ -516,7 +516,7 @@
       }
       pago = `<div class="confirm-sub">${PAY[payMode].ic} Pago: ${esc(pagoTxt)}</div>`;
       if (payMode === 'transferencia') {
-        pago += `<div class="confirm-sub" style="font-size:12.5px;color:var(--muted)">💛 Al enviar, en WhatsApp te aparecerán los datos para transferir. Haz tu pago y mándanos tu comprobante por WhatsApp para empezar a prepararlo.</div>`;
+        pago += `<div class="confirm-sub" style="font-size:12.5px;color:var(--muted)">Al enviar, en WhatsApp te aparecerán los datos para transferir. Haz tu pago y mándanos tu comprobante por WhatsApp para empezar a preparar tu pedido.</div>`;
       }
     }
 
