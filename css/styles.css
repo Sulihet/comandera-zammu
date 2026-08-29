@@ -77,6 +77,8 @@ main { max-width: 640px; margin: 0 auto; }
 .seg { flex: 1; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); padding: 11px 8px; border-radius: 12px; font-weight: 700; font-size: 14px; }
 .seg.active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .cart-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.cart-total-row { display: flex; justify-content: space-between; align-items: baseline; margin: 4px 0 16px; padding-top: 12px; border-top: 2px solid var(--line); font-size: 15px; color: var(--muted); font-weight: 600; }
+.cart-total-row b { font-size: 24px; color: var(--accent-ink); }
 .cart-total-label { color: var(--muted); font-size: 14px; }
 .cart-total-label b { color: var(--ink); font-size: 20px; margin-left: 4px; }
 .cart-lines { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
