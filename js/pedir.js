@@ -535,7 +535,7 @@
         <div class="confirm-lines">${lines}</div>
         <div class="confirm-total"><span>Total</span><b>${money(total)}</b></div>
       </div>
-      <p class="hint">Revisa que la entrega sea la correcta. Al enviar, se abrirá WhatsApp con tu pedido listo.</p>
+      <p class="hint" style="margin:6px 0 18px">Revisa que tu pedido esté correcto. Al enviar, se abrirá WhatsApp con tu pedido listo.</p>
       <button class="btn-primary big" id="confirm-send">✅ Sí, enviar por WhatsApp</button>
       <button class="btn-ghost" id="confirm-edit">✏️ Cambiar</button>`;
     $('#confirm-send', body).onclick = doSend;
