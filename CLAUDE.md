@@ -280,6 +280,13 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   empacado (`DEFAULT_MENU`). El link también acepta `?feed=`/`#feed=` para activar sin
   tocar código. Ver `GUIA-GOOGLE-SHEETS.md` (Paso 5) para el Apps Script y el mensaje de
   bienvenida.
+- **Candado abrir/cerrar pedidos** (`config.ordersOpen`): la comandera tiene un
+  interruptor en la pestaña "📥 En línea" (🟢 Recibiendo / 🔴 Cerrado, `renderOrdersSwitch`
+  / `toggleOrdersOpen`). El estado viaja **dentro del menú publicado** (`menuForPublish`
+  inyecta `ordersOpen`), así que **no requiere tocar el Apps Script**. El link del cliente
+  lee `menu.ordersOpen`; si está cerrado, muestra un banner (`renderClosedBanner`) y
+  **deshabilita el envío** (puede ver el menú pero no pedir). Por defecto **abierto**
+  (solo `false` explícito cierra); persiste en config hasta que el admin lo cambie.
 - **Pedidos en línea directo a la comandera** (spec/plan `2026-08-28-pedidos-en-linea-a-
   comandera`): al confirmar en el link, `doSend()` en `pedir.js` **POSTea el pedido**
   (`buildOrderPayload()` → `{type:'order', order}`, no-cors + `keepalive`) al Apps Script

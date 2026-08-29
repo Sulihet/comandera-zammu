@@ -199,6 +199,13 @@ main { max-width: 640px; margin: 0 auto; }
 .online-card { border-left: 4px solid var(--accent); }
 .online-meta { font-size: 13.5px; color: var(--ink); padding: 3px 0; }
 .online-meta a { color: var(--accent-ink); font-weight: 700; }
+/* candado: interruptor abrir/cerrar pedidos (comandera) */
+.orders-toggle { width: 100%; border: none; border-radius: 14px; padding: 14px; margin-bottom: 14px; font-weight: 800; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.orders-toggle small { font-weight: 600; font-size: 12px; opacity: .85; }
+.orders-toggle.on { background: #d8efdd; color: #1e7a3d; }
+.orders-toggle.off { background: #fdecea; color: var(--danger); }
+/* candado: aviso "cerrado" (link del cliente) */
+.closed-banner { background: #fdecea; border: 1.5px solid var(--danger); color: #9a2820; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.35; margin-bottom: 16px; }
 
 /* ---------- Modal / Sheet ---------- */
 #modal-root { display: none; }

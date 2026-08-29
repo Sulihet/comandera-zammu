@@ -522,6 +522,11 @@
   // el cierre diario, distinguido por type:'menu'). Así el LINK DEL CLIENTE
   // (pedir.html) refleja en vivo los precios y "agotado" que edita el admin.
   // no-cors = envío a ciegas; debounced para no disparar en cada tecleo de precio.
+  // El menú publicado lleva además el estado del "candado" (ordersOpen): así el
+  // link sabe si recibir pedidos, sin cambiar el Apps Script (viaja dentro del menú).
+  const ordersAreOpen = () => config.ordersOpen !== false; // por defecto abierto
+  const menuForPublish = () => Object.assign({}, menu, { ordersOpen: ordersAreOpen() });
+
   let publishTimer = null;
   function publishMenu() {
     const url = (config.sheetsUrl || '').trim();
@@ -529,20 +534,38 @@
     clearTimeout(publishTimer);
     publishTimer = setTimeout(() => {
       try {
-        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu }) }).catch(() => {});
+        fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu: menuForPublish() }) }).catch(() => {});
       } catch (e) { /* sin conexión: se reintenta en la próxima edición */ }
     }, 1500);
   }
 
-  // Publica de inmediato (botón manual "Publicar menú al link"), con aviso.
-  function publishMenuNow() {
+  // Publica de inmediato (botón manual / cambio de candado), con aviso.
+  function publishMenuNow(silent) {
     const url = (config.sheetsUrl || '').trim();
-    if (!url) { toast('Primero conecta tu Google Sheets en ⚙️ Ajustes'); return; }
+    if (!url) { if (!silent) toast('Primero conecta tu Google Sheets en ⚙️ Ajustes'); return; }
     clearTimeout(publishTimer);
     try {
-      fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu }) }).catch(() => {});
-      toast('Menú publicado al link ☁️');
-    } catch (e) { toast('⚠️ No se pudo publicar (revisa tu conexión)'); }
+      fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'menu', menu: menuForPublish() }) }).catch(() => {});
+      if (!silent) toast('Menú publicado al link ☁️');
+    } catch (e) { if (!silent) toast('⚠️ No se pudo publicar (revisa tu conexión)'); }
+  }
+
+  // Candado: abrir/cerrar la recepción de pedidos en línea.
+  function renderOrdersSwitch() {
+    const box = $('#orders-switch');
+    if (!box) return;
+    const open = ordersAreOpen();
+    box.innerHTML = `<button class="orders-toggle ${open ? 'on' : 'off'}" id="btn-orders-toggle">
+        <span>${open ? '🟢 Recibiendo pedidos en línea' : '🔴 Cerrado — no se reciben pedidos'}</span>
+        <small>${open ? 'Toca para cerrar' : 'Toca para abrir'}</small>
+      </button>`;
+  }
+  function toggleOrdersOpen() {
+    config.ordersOpen = !ordersAreOpen();
+    Store.saveConfig(config);
+    renderOrdersSwitch();
+    publishMenuNow(true); // publica el estado de inmediato (sin toast de "menú publicado")
+    toast(ordersAreOpen() ? 'Link ABIERTO: recibiendo pedidos ✅' : 'Link CERRADO: no se reciben pedidos 🔒');
   }
 
   // ==========================================================
@@ -1272,7 +1295,7 @@
     if (view === 'menu') renderMenuEditor();
     if (view === 'cierre') renderCierre();
     if (view === 'historial') renderHistorial();
-    if (view === 'online') { renderOnline(); fetchOnlineOrders(); }
+    if (view === 'online') { renderOrdersSwitch(); renderOnline(); fetchOnlineOrders(); }
   }
 
   function bind() {
@@ -1402,6 +1425,7 @@
 
     // pedidos en línea: refrescar, expandir, aceptar/editar/rechazar
     $('#view-online').addEventListener('click', (e) => {
+      if (e.target.closest('#btn-orders-toggle')) { toggleOrdersOpen(); return; }
       if (e.target.closest('#btn-refresh-online')) { toast('Buscando pedidos nuevos…'); fetchOnlineOrders(); return; }
       const accept = e.target.closest('[data-oaccept]');
       const edit = e.target.closest('[data-oedit]');

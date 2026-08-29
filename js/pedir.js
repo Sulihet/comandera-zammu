@@ -61,6 +61,7 @@
   let menu = DEFAULT_MENU;          // respaldo hasta que llegue el menú en vivo
   let currentCat = menu.categories[0] ? menu.categories[0].id : null;
   let usingFallback = true;         // ¿mostrando el menú empacado (no el del admin)?
+  let ordersOpen = true;            // candado: ¿el admin tiene el link abierto?
 
   // ---------- Origen del menú en vivo (feed) ----------
   // Prioridad: ?feed= / #feed= en la URL  >  MENU_FEED_URL de la config.
@@ -149,6 +150,15 @@
     box.innerHTML = (usingFallback && !feedUrl())
       ? `<div class="pedir-fallback">📋 Menú de referencia. Confirma disponibilidad y precios al enviar tu pedido.</div>`
       : '';
+  }
+
+  // Candado: si el admin cerró el link, avisamos y no se puede enviar.
+  function renderClosedBanner() {
+    const box = $('#closed-banner');
+    if (!box) return;
+    if (ordersOpen) { box.innerHTML = ''; return; }
+    const hor = (cfg.INFO && cfg.INFO.horario) ? ` Horario: ${esc(cfg.INFO.horario)}.` : '';
+    box.innerHTML = `<div class="closed-banner">🌙 Por ahora <b>no estamos recibiendo pedidos en línea</b>.${hor} Puedes ver el menú; ¡vuelve pronto! 🐶</div>`;
   }
 
   function renderServiceMode() {
@@ -293,7 +303,9 @@
     }
     const total = cart.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     $('#cart-total').textContent = money(total);
-    $('#btn-send').disabled = !cart.length;
+    const btn = $('#btn-send');
+    if (!ordersOpen) { btn.disabled = true; btn.textContent = '🌙 Por ahora no recibimos pedidos'; }
+    else { btn.disabled = !cart.length; btn.textContent = '📲 Enviar mi pedido por WhatsApp'; }
     renderServiceMode();
     const nm = $('#customer-name');
     if (nm && nm.value !== name) nm.value = name;
@@ -471,6 +483,7 @@
 
   function sendOrder() {
     if (!cart.length) return;
+    if (!ordersOpen) { toast('Por ahora no estamos recibiendo pedidos 🌙'); return; }
     if (!name.trim()) { toast('Escribe tu nombre 🙂'); const nm = $('#customer-name'); if (nm) nm.focus(); return; }
     if (mode !== 'recoger' && mode !== 'domicilio') { toast('Elige: 🥡 Recoger o 🛵 A domicilio'); return; }
     if (mode === 'domicilio') {
@@ -683,10 +696,13 @@
     if (isValidMenu(live)) {
       menu = live;
       usingFallback = false;
+      ordersOpen = (live.ordersOpen !== false); // candado del admin (por defecto abierto)
       if (!menu.categories.some((c) => c.id === currentCat)) {
         currentCat = menu.categories[0] ? menu.categories[0].id : null;
       }
       renderMenu();
+      renderClosedBanner();
+      renderCart();
     }
   });
 })();
