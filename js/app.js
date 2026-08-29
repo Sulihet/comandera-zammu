@@ -151,12 +151,13 @@
 
   // ---------- Hoja de configuración de un platillo ----------
   function openItemSheet(item) {
-    let variant = item.variants ? item.variants[0] : null;
-    const selections = {};
-    (item.choices || []).forEach((ch) => { if (ch.required) selections[ch.id] = ch.options[0].id; });
+    let variant = null;                 // nada preseleccionado: el cliente elige
+    const selections = {};              // (idem para las opciones obligatorias)
     const extras = new Set();
     let qty = 1;
     let notes = '';
+    // hamburguesas/hot dog: el Tipo (Con carne/Vegetariana) va ANTES que las papas
+    const choicesFirst = !!(item.variants && (item.choices || []).some((ch) => ch.id === 'tipo'));
 
     const body = document.createElement('div');
     function draw() {
@@ -196,9 +197,15 @@
         </div>` : '';
 
       const unit = calcUnitPrice(item, variant, selections, extras);
+      // falta elegir: variante (si tiene) y las opciones obligatorias
+      const complete = (!item.variants || variant) && (item.choices || []).every((ch) => !ch.required || selections[ch.id]);
+      const opciones = choicesFirst ? `${choicesHtml}${variantHtml}` : `${variantHtml}${choicesHtml}`;
+      const addBtn = complete
+        ? `<button class="btn-primary big" id="sheet-add">Agregar &nbsp;·&nbsp; ${money(unit * qty)}</button>`
+        : `<button class="btn-primary big" id="sheet-add" disabled>Elige las opciones para continuar</button>`;
       body.innerHTML = `
         <h2>${esc(item.name)}</h2>
-        ${variantHtml}${choicesHtml}${extrasHtml}${notesHtml}
+        ${opciones}${extrasHtml}${notesHtml}
         <div class="field qty-field">
           <label>Cantidad</label>
           <div class="stepper">
@@ -207,7 +214,7 @@
             <button data-qty="1">+</button>
           </div>
         </div>
-        <button class="btn-primary big" id="sheet-add">Agregar &nbsp;·&nbsp; ${money(unit * qty)}</button>`;
+        ${addBtn}`;
 
       // eventos internos
       $$('[data-variant]', body).forEach((b) => b.onclick = () => { variant = item.variants.find((v) => v.id === b.dataset.variant); draw(); });
@@ -225,6 +232,7 @@
       const notesInput = $('#sheet-notes', body);
       if (notesInput) notesInput.oninput = (e) => { notes = e.target.value; };
       $('#sheet-add', body).onclick = () => {
+        if (!complete) return;
         // recoge la nota final por si el usuario no disparó oninput
         const ni = $('#sheet-notes', body);
         const extraNames = (item.extras || []).filter((ex) => extras.has(ex.id)).map((ex) => ex.name);

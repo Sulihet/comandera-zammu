@@ -103,7 +103,13 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
     Tocino $10 · Queso amarillo $5.
   - **Tipo** (choice `tipo`, obligatorio, sin costo): **Con carne / Vegetariana** en las
     dos hamburguesas y el hot dog. Va en el menú compartido (`menu-data.js` + migración
-    `ensureTipo` en `store.js`), así que aparece **en la comandera Y en el link**.
+    `ensureTipo` en `store.js`), así que aparece **en la comandera Y en el link**. En la
+    hoja del platillo, el **Tipo se muestra ANTES que las papas** (`choicesFirst` =
+    item con variantes + choice `tipo`, en ambos `openItemSheet`).
+- **Nada preseleccionado en la hoja del platillo** (comandera y link): la variante y las
+  opciones obligatorias empiezan **sin elegir** (ningún botón resaltado); el botón
+  "Agregar" nace **deshabilitado** ("Elige las opciones para continuar") y se activa
+  (`complete`) cuando ya se eligió la variante (si tiene) y todas las opciones requeridas.
 - **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
   Gourmet $35 (pistacho/cheese cake/frutos rojos) · Paquete 4 baos $105 ·
   Paquete 6 baos $165.

@@ -292,9 +292,10 @@
 
   // ---------- Hoja de configuración de un platillo ----------
   function openItemSheet(item) {
-    let variant = item.variants ? item.variants[0] : null;
-    const selections = {};
-    (item.choices || []).forEach((ch) => { if (ch.required) selections[ch.id] = ch.options[0].id; });
+    let variant = null;                 // nada preseleccionado: el cliente elige
+    const selections = {};              // (idem para las opciones obligatorias)
+    // hamburguesas/hot dog: el Tipo (Con carne/Vegetariana) va ANTES que las papas
+    const choicesFirst = !!(item.variants && (item.choices || []).some((ch) => ch.id === 'tipo'));
     const extras = new Set();
     // Aderezos, solo en el link del cliente. Por ID de platillo (ej. papas) o por
     // categoría (banderillas salada/dulce); el ID gana si existe.
@@ -353,9 +354,15 @@
         </div>` : '';
 
       const unit = MenuLogic.calcUnitPrice(item, variant, selections, extras);
+      // falta elegir: variante (si tiene) y las opciones obligatorias
+      const complete = (!item.variants || variant) && (item.choices || []).every((ch) => !ch.required || selections[ch.id]);
+      const opciones = choicesFirst ? `${choicesHtml}${variantHtml}` : `${variantHtml}${choicesHtml}`;
+      const addBtn = complete
+        ? `<button class="btn-primary big" id="sheet-add">Agregar &nbsp;·&nbsp; ${money(unit * qty)}</button>`
+        : `<button class="btn-primary big" id="sheet-add" disabled>Elige las opciones para continuar</button>`;
       body.innerHTML = `
         <h2>${esc(item.name)}</h2>
-        ${variantHtml}${choicesHtml}${extrasHtml}${aderezosHtml}${notesHtml}
+        ${opciones}${extrasHtml}${aderezosHtml}${notesHtml}
         <div class="field qty-field">
           <label>Cantidad</label>
           <div class="stepper">
@@ -364,7 +371,7 @@
             <button data-qty="1">+</button>
           </div>
         </div>
-        <button class="btn-primary big" id="sheet-add">Agregar &nbsp;·&nbsp; ${money(unit * qty)}</button>`;
+        ${addBtn}`;
 
       $$('[data-variant]', body).forEach((b) => b.onclick = () => { variant = item.variants.find((v) => v.id === b.dataset.variant); draw(); });
       $$('[data-choice]', body).forEach((b) => b.onclick = () => {
@@ -388,6 +395,7 @@
       const notesInput = $('#sheet-notes', body);
       if (notesInput) notesInput.oninput = (e) => { notes = e.target.value; };
       $('#sheet-add', body).onclick = () => {
+        if (!complete) return;
         const ni = $('#sheet-notes', body);
         const extraNames = (item.extras || []).filter((ex) => extras.has(ex.id)).map((ex) => ex.name);
         cart.push({
