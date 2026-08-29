@@ -37,7 +37,7 @@
   // OJO: no llamar esta variable "location" (taparía window.location y rompe el feed).
   let geoloc = (_s.geoloc && typeof _s.geoloc.lat === 'number' && typeof _s.geoloc.lng === 'number') ? _s.geoloc : null;
   // En domicilio, cómo indica su ubicación: 'texto' (escribe dirección) o 'ubicacion' (GPS).
-  let addrMode = (_s.addrMode === 'ubicacion') ? 'ubicacion' : 'texto';
+  let addrMode = (_s.addrMode === 'texto' || _s.addrMode === 'ubicacion') ? _s.addrMode : null;
   // Pago SOLO aplica a domicilio: 'efectivo' | 'transferencia' | null.
   let payMode = (['efectivo', 'transferencia'].indexOf(_s.payMode) >= 0) ? _s.payMode : null;
   // Con cuánto paga (denominación) en domicilio + efectivo, para llevar cambio.
@@ -224,12 +224,16 @@
         <button class="seg ${addrMode === 'ubicacion' ? 'active' : ''}" data-addr="ubicacion">📍 Compartir ubicación</button>
       </div>`;
 
-    const inputBlock = addrMode === 'ubicacion'
-      ? (geoloc
-          ? `<button type="button" class="btn-outline loc-on" id="btn-loc">✅ Ubicación compartida · toca para quitar</button>`
-          : `<button type="button" class="btn-primary big" id="btn-loc">📍 Compartir mi ubicación</button>`)
-      : `<input type="text" id="cust-address" placeholder="Calle y número, colonia" maxlength="160" value="${esc(address)}">
+    // nada preseleccionado: hasta que el cliente elija, no se muestra input
+    let inputBlock = '';
+    if (addrMode === 'ubicacion') {
+      inputBlock = geoloc
+        ? `<button type="button" class="btn-outline loc-on" id="btn-loc">✅ Ubicación compartida · toca para quitar</button>`
+        : `<button type="button" class="btn-primary big" id="btn-loc">📍 Compartir mi ubicación</button>`;
+    } else if (addrMode === 'texto') {
+      inputBlock = `<input type="text" id="cust-address" placeholder="Calle y número, colonia" maxlength="160" value="${esc(address)}">
          <input type="text" id="cust-ref" class="mt8" placeholder="Referencias: entre calles, color de casa… (opcional)" maxlength="160" value="${esc(reference)}">`;
+    }
 
     wrap.innerHTML = `
       <div class="field">
@@ -470,6 +474,7 @@
     if (!name.trim()) { toast('Escribe tu nombre 🙂'); const nm = $('#customer-name'); if (nm) nm.focus(); return; }
     if (mode !== 'recoger' && mode !== 'domicilio') { toast('Elige: 🥡 Recoger o 🛵 A domicilio'); return; }
     if (mode === 'domicilio') {
+      if (!addrMode) { toast('Elige: ✍️ Escribir dirección o 📍 Compartir ubicación'); return; }
       if (addrMode === 'ubicacion' && !geoloc) { toast('Toca "Compartir mi ubicación" 📍'); return; }
       if (addrMode === 'texto' && !address.trim()) {
         toast('Escribe tu dirección para el envío 📍');
@@ -601,7 +606,7 @@
     address = '';
     reference = '';
     geoloc = null;
-    addrMode = 'texto';
+    addrMode = null;
     payMode = null;
     payBill = '';
     payBillOther = '';
