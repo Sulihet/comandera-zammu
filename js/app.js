@@ -875,9 +875,14 @@
     fetchJsonp(feed, (data) => {
       if (!Array.isArray(data)) return; // timeout/sin red: conserva lo que había
       const done = Store.getOnlineDone();
-      onlineOrders = data.filter((o) => o && o.id && done.indexOf(o.id) < 0);
+      const filtered = data.filter((o) => o && o.id && done.indexOf(o.id) < 0);
+      // solo re-dibuja si cambió el conjunto de pedidos: así una tarjeta abierta
+      // no se contrae sola en cada refresco de ~20s.
+      const sig = (arr) => arr.map((o) => o.id).sort().join(',');
+      const changed = sig(filtered) !== sig(onlineOrders);
+      onlineOrders = filtered;
       updateOnlineBadge();
-      if (currentView === 'online') renderOnline();
+      if (currentView === 'online' && changed) renderOnline();
     });
   }
 
@@ -913,6 +918,11 @@
   function renderOnline() {
     const box = $('#online-list');
     if (!box) return;
+    // recuerda qué tarjetas están abiertas para restaurarlas tras redibujar
+    const wasOpen = new Set(Array.from(box.querySelectorAll('.order-card'))
+      .filter((c) => { const dt = c.querySelector('.order-detail'); return dt && !dt.hidden; })
+      .map((c) => { const h = c.querySelector('[data-otoggle]'); return h && h.dataset.otoggle; })
+      .filter(Boolean));
     if (!(config.sheetsUrl || '').trim()) {
       box.innerHTML = '<p class="empty">Conecta tu Google Sheets en ⚙️ Ajustes para recibir aquí los pedidos del link.</p>';
       return;
@@ -972,6 +982,14 @@
           </div>
         </div>`;
     }).join('');
+
+    // restaura las tarjetas que estaban abiertas
+    wasOpen.forEach((id) => {
+      const head = box.querySelector(`[data-otoggle="${id}"]`);
+      if (!head) return;
+      const dt = head.closest('.order-card').querySelector('.order-detail');
+      if (dt) { dt.hidden = false; const ch = head.querySelector('.chevron'); if (ch) ch.textContent = '▾'; }
+    });
   }
 
   // Convierte un pedido en línea en un pedido normal de la comandera y lo manda a cocina.
