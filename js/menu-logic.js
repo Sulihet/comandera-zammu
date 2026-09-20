@@ -50,6 +50,7 @@ const MenuLogic = (() => {
       return 'ej. sin cebolla, sin picante';
     }
     if (cat === 'coreano') return 'ej. sin cebollín, sin ajonjolí';
+    if (cat === 'bubbletea') return 'ej. menos dulce, sin hielo';
     return 'ej. alguna nota o petición especial';
   }
 

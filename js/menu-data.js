@@ -17,6 +17,7 @@ const DEFAULT_MENU = {
     { id: 'coreano',  name: 'Coreano',             icon: '🍜' },
     { id: 'fastfood', name: 'Fast Food',           icon: '🍔' },
     { id: 'baos',     name: 'Pan al Vapor',        icon: '🥟' },
+    { id: 'bubbletea',name: 'Bubble Tea',          icon: '🧋' },
     { id: 'bebidas',  name: 'Bebidas',             icon: '🥤' },
   ],
   items: [
@@ -159,6 +160,61 @@ const DEFAULT_MENU = {
     },
     { id: 'bao_paq4', cat: 'baos', name: 'Paquete 4 Baos', available: true, price: 105, notes: true },
     { id: 'bao_paq6', cat: 'baos', name: 'Paquete 6 Baos', available: true, price: 165, notes: true },
+
+    // ---- Bubble Tea (barista): tamaño (variante) + sabor (choice) ----
+    {
+      id: 'bt_milktea', cat: 'bubbletea', name: 'Milk Tea', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 65 },
+        { id: 'grande', name: 'Grande 560 ml', price: 75 },
+      ],
+      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+        { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' },
+        { id: 'taro', name: 'Taro' }, { id: 'bluecoco', name: 'Blue Coco' },
+        { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+      ] }],
+    },
+    {
+      id: 'bt_matcha', cat: 'bubbletea', name: 'Matcha', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 75 },
+        { id: 'grande', name: 'Grande 560 ml', price: 85 },
+      ],
+      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+        { id: 'ube', name: 'Ube' }, { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' },
+      ] }],
+    },
+    {
+      id: 'bt_yakult', cat: 'bubbletea', name: 'Yakult Tea', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 75 },
+        { id: 'grande', name: 'Grande 560 ml', price: 85 },
+      ],
+      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+        { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' }, { id: 'maracuya', name: 'Maracuyá' },
+      ] }],
+    },
+    {
+      id: 'bt_soda', cat: 'bubbletea', name: 'Soda / Blue Soda', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 55 },
+        { id: 'grande', name: 'Grande 560 ml', price: 65 },
+      ],
+      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+        { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' }, { id: 'mangoblue', name: 'Mango Blue Soda' },
+      ] }],
+    },
+    {
+      id: 'bt_fruit', cat: 'bubbletea', name: 'Fruit Tea', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 65 },
+        { id: 'grande', name: 'Grande 560 ml', price: 75 },
+      ],
+      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+        { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' },
+        { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
+      ] }],
+    },
 
     // ---- Bebidas ----
     {

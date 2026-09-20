@@ -21,7 +21,7 @@
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
-  const KITCHEN_CATS = ['fastfood', 'coreano', 'baos'];
+  const KITCHEN_CATS = ['fastfood', 'coreano', 'baos', 'bubbletea'];
   // El hot-dog NO se manda a cocina (lo prepara otra persona), aunque sea fastfood.
   const isKitchenLine = (l) => KITCHEN_CATS.includes(l.cat) && !/hot\s*dog/i.test(l.name);
   const orderHasKitchen = (lines) => lines.some(isKitchenLine);
@@ -576,6 +576,7 @@
     const cat = l.cat;
     if (cat === 'salada' || cat === 'dulce') return { key: 'banderillas', label: 'Banderillas', icon: '🍢', order: 2 };
     if (cat === 'coreano') return { key: 'coreano', label: 'Coreano', icon: '🍜', order: 3 };
+    if (cat === 'bubbletea') return { key: 'bubbletea', label: 'Bubble Tea', icon: '🧋', order: 4.8 };
     if (cat === 'bebidas') return { key: 'bebidas', label: 'Bebidas', icon: '🥤', order: 5 };
     if (cat === 'baos') return { key: 'baos', label: 'Pan al vapor', icon: '🥟', order: 6 };
     if (cat === 'fastfood') {

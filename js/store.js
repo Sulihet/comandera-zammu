@@ -72,6 +72,54 @@ const Store = (() => {
       if (idx >= 0) m.items.splice(idx + 1, 0, papas); else m.items.push(papas);
       changed = true;
     }
+
+    // Bubble Tea (barista): categoría nueva + 5 platillos (tamaño + sabor).
+    m.categories = m.categories || [];
+    if (!m.categories.some((c) => c.id === 'bubbletea')) {
+      const bebIdx = m.categories.findIndex((c) => c.id === 'bebidas');
+      const cat = { id: 'bubbletea', name: 'Bubble Tea', icon: '🧋' };
+      if (bebIdx >= 0) m.categories.splice(bebIdx, 0, cat); else m.categories.push(cat);
+      changed = true;
+    }
+    const bubbleTeaItems = [
+      { id: 'bt_milktea', cat: 'bubbletea', name: 'Milk Tea', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 65 }, { id: 'grande', name: 'Grande 560 ml', price: 75 }],
+        choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+          { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' }, { id: 'taro', name: 'Taro' },
+          { id: 'bluecoco', name: 'Blue Coco' }, { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+        ] }] },
+      { id: 'bt_matcha', cat: 'bubbletea', name: 'Matcha', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 75 }, { id: 'grande', name: 'Grande 560 ml', price: 85 }],
+        choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+          { id: 'ube', name: 'Ube' }, { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' },
+        ] }] },
+      { id: 'bt_yakult', cat: 'bubbletea', name: 'Yakult Tea', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 75 }, { id: 'grande', name: 'Grande 560 ml', price: 85 }],
+        choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+          { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' }, { id: 'maracuya', name: 'Maracuyá' },
+        ] }] },
+      { id: 'bt_soda', cat: 'bubbletea', name: 'Soda / Blue Soda', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 55 }, { id: 'grande', name: 'Grande 560 ml', price: 65 }],
+        choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+          { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' }, { id: 'mangoblue', name: 'Mango Blue Soda' },
+        ] }] },
+      { id: 'bt_fruit', cat: 'bubbletea', name: 'Fruit Tea', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 65 }, { id: 'grande', name: 'Grande 560 ml', price: 75 }],
+        choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
+          { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
+        ] }] },
+    ];
+    // Inserta los que falten, justo antes de la primera línea de bebidas (o al final).
+    let insAt = m.items.findIndex((x) => x.cat === 'bebidas');
+    if (insAt < 0) insAt = m.items.length;
+    bubbleTeaItems.forEach((bt) => {
+      if (!m.items.some((x) => x.id === bt.id)) {
+        m.items.splice(insAt, 0, bt);
+        insAt++;
+        changed = true;
+      }
+    });
+
     return changed;
   }
 
