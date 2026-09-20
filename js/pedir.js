@@ -341,7 +341,7 @@
           <label>${esc(ch.name)}${ch.required ? '' : ' <small>(opcional)</small>'}</label>
           <div class="opt-row">
             ${!ch.required ? `<button class="opt ${(touched[ch.id] && !selections[ch.id]) ? 'sel' : ''}" data-choice="${ch.id}" data-opt="">Ninguno</button>` : ''}
-            ${ch.options.map((o) =>
+            ${ch.options.filter((o) => o.available !== false).map((o) =>
               `<button class="opt ${selections[ch.id] === o.id ? 'sel' : ''}" data-choice="${ch.id}" data-opt="${o.id}">${esc(o.name)}${o.overridePrice != null ? `<small>${money(o.overridePrice)}</small>` : ''}</button>`
             ).join('')}
           </div>

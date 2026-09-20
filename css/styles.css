@@ -117,6 +117,11 @@ main { max-width: 640px; margin: 0 auto; }
 .mini input { width: 84px; border: 1px solid var(--line); border-radius: 8px; padding: 7px; font-size: 15px; }
 .switch { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
 .switch input { width: 20px; height: 20px; }
+.edit-flavors { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; padding-top: 8px; border-top: 1px dashed var(--line); }
+.flavor-switch { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
+.flavor-switch small { color: var(--muted); }
+.flavor-switch.off { opacity: .6; }
+.flavor-switch.off small { color: var(--accent-ink); font-weight: 700; }
 
 /* ---------- Cierre ---------- */
 .close-head { display: flex; gap: 12px; margin-bottom: 16px; }

@@ -175,7 +175,7 @@
           <label>${esc(ch.name)}${ch.required ? '' : ' <small>(opcional)</small>'}</label>
           <div class="opt-row">
             ${!ch.required ? `<button class="opt ${(touched[ch.id] && !selections[ch.id]) ? 'sel' : ''}" data-choice="${ch.id}" data-opt="">Ninguno</button>` : ''}
-            ${ch.options.map((o) =>
+            ${ch.options.filter((o) => o.available !== false).map((o) =>
               `<button class="opt ${selections[ch.id] === o.id ? 'sel' : ''}" data-choice="${ch.id}" data-opt="${o.id}">${esc(o.name)}${o.overridePrice != null ? `<small>${money(o.overridePrice)}</small>` : ''}</button>`
             ).join('')}
           </div>
@@ -495,6 +495,16 @@
               ${i.extras.map((ex) => `<label class="mini">${esc(ex.name)} <input type="number" inputmode="numeric" data-xprice="${i.id}:${ex.id}" value="${ex.priceDelta || 0}"></label>`).join('')}
             </div>`
           : '';
+        // Bubble Tea: encender/apagar cada sabor por individual (solo en el editor).
+        const saborCh = (i.cat === 'bubbletea') ? (i.choices || []).find((ch) => ch.id === 'sabor') : null;
+        const flavorsCtl = (saborCh && saborCh.options.length)
+          ? `<div class="edit-flavors"><span class="extras-label">Sabores (agotar por individual):</span>
+              ${saborCh.options.map((o) => `<label class="switch flavor-switch ${o.available === false ? 'off' : ''}">
+                <input type="checkbox" data-oavail="${i.id}:${o.id}" ${o.available === false ? '' : 'checked'}>
+                <span>${esc(o.name)} <small>${o.available === false ? 'Agotado' : 'Disponible'}</small></span>
+              </label>`).join('')}
+            </div>`
+          : '';
         return `<div class="edit-row ${i.available === false ? 'off' : ''}">
             <div class="edit-row-top">
               <input type="text" class="name-input" data-name="${i.id}" value="${esc(i.name)}">
@@ -506,6 +516,7 @@
               <input type="checkbox" data-avail="${i.id}" ${i.available === false ? '' : 'checked'}>
               <span>${i.available === false ? 'Agotado' : 'Disponible'}</span>
             </label>
+            ${flavorsCtl}
           </div>`;
       }).join('');
       return `<section class="edit-cat">
@@ -1364,6 +1375,12 @@
       if (t.dataset.avail != null) {
         const it = menu.items.find((i) => i.id === t.dataset.avail);
         if (it) { it.available = t.checked; persistMenu(); renderMenuEditor(); }
+      } else if (t.dataset.oavail != null) {
+        const [iid, oid] = t.dataset.oavail.split(':');
+        const it = menu.items.find((i) => i.id === iid);
+        const ch = it && (it.choices || []).find((c) => c.id === 'sabor');
+        const opt = ch && ch.options.find((o) => o.id === oid);
+        if (opt) { opt.available = t.checked; persistMenu(); renderMenuEditor(); }
       }
     });
     $('#menu-editor').addEventListener('click', (e) => {
