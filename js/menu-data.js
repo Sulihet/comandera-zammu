@@ -161,7 +161,7 @@ const DEFAULT_MENU = {
     { id: 'bao_paq4', cat: 'baos', name: 'Paquete 4 Baos', available: true, price: 105, notes: true },
     { id: 'bao_paq6', cat: 'baos', name: 'Paquete 6 Baos', available: true, price: 165, notes: true },
 
-    // ---- Bubble Tea (barista): tamaño (variante) + sabor (choice) ----
+    // ---- Bubble Tea (barista): tamaño (variante) + sabor + dulzor (choices) ----
     {
       id: 'bt_milktea', cat: 'bubbletea', name: 'Milk Tea', available: true, notes: true,
       variants: [
@@ -172,6 +172,8 @@ const DEFAULT_MENU = {
         { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' },
         { id: 'taro', name: 'Taro' }, { id: 'bluecoco', name: 'Blue Coco' },
         { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+      ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
     {
@@ -182,6 +184,8 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'ube', name: 'Ube' }, { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' },
+      ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
     {
@@ -192,6 +196,8 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' }, { id: 'maracuya', name: 'Maracuyá' },
+      ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
     {
@@ -202,6 +208,8 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' }, { id: 'mangoblue', name: 'Mango Blue Soda' },
+      ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
     {
@@ -213,6 +221,8 @@ const DEFAULT_MENU = {
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' },
         { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
+      ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
 

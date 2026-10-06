@@ -109,6 +109,12 @@ const Store = (() => {
           { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
         ] }] },
     ];
+    // Dulzor (Poco / Normal / Extra) en Bubble Tea: choice obligatorio, sin costo.
+    const dulzorChoice = () => ({ id: 'dulzor', name: 'Dulzor', required: true, options: [
+      { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
+    ] });
+    // los que se inserten de cero ya nacen con dulzor
+    bubbleTeaItems.forEach((bt) => { if (!bt.choices.some((c) => c.id === 'dulzor')) bt.choices.push(dulzorChoice()); });
     // Inserta los que falten, justo antes de la primera línea de bebidas (o al final).
     let insAt = m.items.findIndex((x) => x.cat === 'bebidas');
     if (insAt < 0) insAt = m.items.length;
@@ -117,6 +123,14 @@ const Store = (() => {
         m.items.splice(insAt, 0, bt);
         insAt++;
         changed = true;
+      }
+    });
+    // A los Bubble Tea ya guardados (sin dulzor), inyecta el choice sin tocar el
+    // sabor ni el "agotado" por sabor que el usuario haya editado.
+    m.items.forEach((it) => {
+      if (it.cat === 'bubbletea') {
+        it.choices = it.choices || [];
+        if (!it.choices.some((c) => c.id === 'dulzor')) { it.choices.push(dulzorChoice()); changed = true; }
       }
     });
 

@@ -118,8 +118,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55.
 - **Bubble Tea (la prepara la barista):** 5 platillos, cada uno = **variante de
   tamaño obligatoria** (Chico 430 ml / Grande 560 ml, precio distinto) + **choice
-  de sabor** obligatorio (sin costo). Dentro de cada familia todas las bebidas
-  cuestan igual (el precio vive en la variante de tamaño):
+  de sabor** obligatorio + **choice de dulzor** obligatorio (Poco dulce / Normal /
+  Extra dulce, sin costo). Todos sin costo extra. Dentro de cada familia todas las
+  bebidas cuestan igual (el precio vive en la variante de tamaño):
   - Milk Tea $65/$75 (Black Sugar · Mazapán · Taro · Blue Coco · Blue Mango · Blue Fresa).
   - Matcha $75/$85 (Ube · Mango · Fresa).
   - Yakult Tea $75/$85 (Mango · Fresa · Maracuyá).
@@ -130,7 +131,9 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
     cocina). Un pedido solo de barra **sí se envía**. Cuenta en el cierre como
     concepto propio 🧋 Bubble Tea (`conceptOf`). Va en el menú compartido
     (`menu-data.js` + migración en `store.js`), así que aparece en la comandera Y
-    en el link. Spec/plan: `docs/*/2026-09-19-bubble-tea.md`.
+    en el link. Spec/plan: `docs/*/2026-09-19-bubble-tea.md`. Dulzor:
+    `docs/*/2026-10-05-bubble-tea-dulzor.md` (choice `id:'dulzor'`, migración
+    `migrateMenu`; el armado/detalle/mensaje salen solos por ser choice genérico).
 
 ## Estructura de carpetas
 - Raíz: la app (PWA estática, sin build). `css/`, `js/`, íconos y manifest.
