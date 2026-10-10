@@ -121,11 +121,15 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   de sabor** obligatorio + **choice de dulzor** obligatorio (Poco dulce / Normal /
   Extra dulce, sin costo). Todos sin costo extra. Dentro de cada familia todas las
   bebidas cuestan igual (el precio vive en la variante de tamaño):
-  - Milk Tea $65/$75 (Black Sugar · Mazapán · Taro · Blue Coco · Blue Mango · Blue Fresa).
+  - Milk Tea $65/$75 (Black Sugar · Mazapán · Taro · Blue Coco · Blue Mango · Blue Fresa · **Pistache**).
   - Matcha $75/$85 (Ube · Mango · Fresa).
   - Yakult Tea $75/$85 (Mango · Fresa · Maracuyá).
   - Soda / Blue Soda $55/$65 (Galaxy · Fresa Blue · Mango Blue).
   - Fruit Tea $65/$75 (Maracuyá · Jamaica · Mango · Durazno).
+  - **Pumpkin Spice 🍂 (temporada)** $78/$88 — **platillo propio** (`bt_pumpkin`),
+    una sola bebida (sin choice de sabor), solo Tamaño + Dulzor. Se apaga con el
+    toggle Disponible/Agotado al acabar la temporada. Spec/plan:
+    `docs/*/2026-10-09-bubble-tea-pumpkin-pistache.md`.
   - **Sí va al grupo de WhatsApp** en su propia sección `🧋 BUBBLE TEA` (categoría
     `bubbletea` agregada a `KITCHEN_CATS`; la prepara la barista, mismo grupo que
     cocina). Un pedido solo de barra **sí se envía**. Cuenta en el cierre como

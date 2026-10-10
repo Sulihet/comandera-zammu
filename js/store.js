@@ -108,6 +108,10 @@ const Store = (() => {
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
         ] }] },
+      // Pumpkin Spice: temporada, platillo propio (sin sabor), con dulzor.
+      { id: 'bt_pumpkin', cat: 'bubbletea', name: 'Pumpkin Spice 🍂 (temporada)', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 78 }, { id: 'grande', name: 'Grande 560 ml', price: 88 }],
+        choices: [] },
     ];
     // Dulzor (Poco / Normal / Extra) en Bubble Tea: choice obligatorio, sin costo.
     const dulzorChoice = () => ({ id: 'dulzor', name: 'Dulzor', required: true, options: [
@@ -133,6 +137,13 @@ const Store = (() => {
         if (!it.choices.some((c) => c.id === 'dulzor')) { it.choices.push(dulzorChoice()); changed = true; }
       }
     });
+    // Pistache: sabor nuevo de Milk Tea (sin tocar los demás sabores ni su agotado).
+    const milk = m.items.find((x) => x.id === 'bt_milktea');
+    const milkSabor = milk && (milk.choices || []).find((c) => c.id === 'sabor');
+    if (milkSabor && !milkSabor.options.some((o) => o.id === 'pistache')) {
+      milkSabor.options.push({ id: 'pistache', name: 'Pistache' });
+      changed = true;
+    }
 
     return changed;
   }

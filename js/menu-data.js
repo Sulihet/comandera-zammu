@@ -172,6 +172,7 @@ const DEFAULT_MENU = {
         { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' },
         { id: 'taro', name: 'Taro' }, { id: 'bluecoco', name: 'Blue Coco' },
         { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+        { id: 'pistache', name: 'Pistache' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
@@ -222,6 +223,17 @@ const DEFAULT_MENU = {
         { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' },
         { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
+        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
+      ] }],
+    },
+    // Pumpkin Spice: bebida de temporada (platillo propio, una sola bebida: sin sabor).
+    {
+      id: 'bt_pumpkin', cat: 'bubbletea', name: 'Pumpkin Spice 🍂 (temporada)', available: true, notes: true,
+      variants: [
+        { id: 'chico',  name: 'Chico 430 ml',  price: 78 },
+        { id: 'grande', name: 'Grande 560 ml', price: 88 },
+      ],
+      choices: [{ id: 'dulzor', name: 'Dulzor', required: true, options: [
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
