@@ -86,7 +86,8 @@ const Store = (() => {
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 65 }, { id: 'grande', name: 'Grande 560 ml', price: 75 }],
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' }, { id: 'taro', name: 'Taro' },
-          { id: 'bluecoco', name: 'Blue Coco' }, { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+          { id: 'bluepitahaya', name: 'Blue Pitahaya' }, { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+          { id: 'pistache', name: 'Pistache' },
         ] }] },
       { id: 'bt_matcha', cat: 'bubbletea', name: 'Matcha', available: true, notes: true,
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 75 }, { id: 'grande', name: 'Grande 560 ml', price: 85 }],
@@ -98,15 +99,16 @@ const Store = (() => {
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'mango', name: 'Mango' }, { id: 'fresa', name: 'Fresa' }, { id: 'maracuya', name: 'Maracuyá' },
         ] }] },
-      { id: 'bt_soda', cat: 'bubbletea', name: 'Soda / Blue Soda', available: true, notes: true,
+      { id: 'bt_soda', cat: 'bubbletea', name: 'Soda Tea', available: true, notes: true,
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 55 }, { id: 'grande', name: 'Grande 560 ml', price: 65 }],
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-          { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' }, { id: 'mangoblue', name: 'Mango Blue Soda' },
+          { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' },
+          { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Pitahaya Soda' },
         ] }] },
       { id: 'bt_fruit', cat: 'bubbletea', name: 'Fruit Tea', available: true, notes: true,
-        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 65 }, { id: 'grande', name: 'Grande 560 ml', price: 75 }],
+        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 70 }, { id: 'grande', name: 'Grande 560 ml', price: 80 }],
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-          { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
+          { id: 'tropical', name: 'Tropical' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mangomaracuya', name: 'Mango-Maracuya' }, { id: 'lichidurazno', name: 'Lichi-Durazno' },
         ] }] },
       // Pumpkin Spice: temporada, platillo propio (sin sabor), con dulzor.
       { id: 'bt_pumpkin', cat: 'bubbletea', name: 'Pumpkin Spice 🍂 (temporada)', available: true, notes: true,
@@ -143,6 +145,53 @@ const Store = (() => {
     if (milkSabor && !milkSabor.options.some((o) => o.id === 'pistache')) {
       milkSabor.options.push({ id: 'pistache', name: 'Pistache' });
       changed = true;
+    }
+
+    // --- Actualización de carta Bubble Tea (oct 2026) ---
+    // Edita la lista de sabores conservando el "agotado" de los que se quedan.
+    const saborOf = (id) => {
+      const it = m.items.find((x) => x.id === id);
+      return it && (it.choices || []).find((c) => c.id === 'sabor');
+    };
+    const removeOpt = (ch, optId) => {
+      if (ch && ch.options.some((o) => o.id === optId)) {
+        ch.options = ch.options.filter((o) => o.id !== optId); changed = true;
+      }
+    };
+    const addOptBefore = (ch, opt, beforeId) => {
+      if (!ch || ch.options.some((o) => o.id === opt.id)) return;
+      const idx = beforeId ? ch.options.findIndex((o) => o.id === beforeId) : -1;
+      if (idx >= 0) ch.options.splice(idx, 0, opt); else ch.options.push(opt);
+      changed = true;
+    };
+
+    // Milk Tea: Blue Coco -> Blue Pitahaya.
+    const mtSabor = saborOf('bt_milktea');
+    removeOpt(mtSabor, 'bluecoco');
+    addOptBefore(mtSabor, { id: 'bluepitahaya', name: 'Blue Pitahaya' }, 'bluemango');
+
+    // Soda: renombrar a "Soda Tea"; quitar Mango Blue; agregar Dragon-Mango y Pitahaya Soda.
+    const soda = m.items.find((x) => x.id === 'bt_soda');
+    if (soda && soda.name === 'Soda / Blue Soda') { soda.name = 'Soda Tea'; changed = true; }
+    const sodaSabor = saborOf('bt_soda');
+    removeOpt(sodaSabor, 'mangoblue');
+    addOptBefore(sodaSabor, { id: 'dragonmango', name: 'Dragon-Mango Soda' }, null);
+    addOptBefore(sodaSabor, { id: 'pitahayasoda', name: 'Pitahaya Soda' }, null);
+
+    // Fruit Tea: nueva lista de sabores; precio 70/80 solo si sigue en el viejo 65/75.
+    const fruitSabor = saborOf('bt_fruit');
+    removeOpt(fruitSabor, 'maracuya');
+    removeOpt(fruitSabor, 'mango');
+    removeOpt(fruitSabor, 'durazno');
+    addOptBefore(fruitSabor, { id: 'tropical', name: 'Tropical' }, 'jamaica');
+    addOptBefore(fruitSabor, { id: 'mangomaracuya', name: 'Mango-Maracuya' }, null);
+    addOptBefore(fruitSabor, { id: 'lichidurazno', name: 'Lichi-Durazno' }, null);
+    const fruit = m.items.find((x) => x.id === 'bt_fruit');
+    if (fruit && Array.isArray(fruit.variants)) {
+      const fch = fruit.variants.find((v) => v.id === 'chico');
+      const fgr = fruit.variants.find((v) => v.id === 'grande');
+      if (fch && fch.price === 65) { fch.price = 70; changed = true; }
+      if (fgr && fgr.price === 75) { fgr.price = 80; changed = true; }
     }
 
     return changed;

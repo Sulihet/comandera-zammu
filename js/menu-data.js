@@ -170,7 +170,7 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' },
-        { id: 'taro', name: 'Taro' }, { id: 'bluecoco', name: 'Blue Coco' },
+        { id: 'taro', name: 'Taro' }, { id: 'bluepitahaya', name: 'Blue Pitahaya' },
         { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
         { id: 'pistache', name: 'Pistache' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
@@ -202,13 +202,14 @@ const DEFAULT_MENU = {
       ] }],
     },
     {
-      id: 'bt_soda', cat: 'bubbletea', name: 'Soda / Blue Soda', available: true, notes: true,
+      id: 'bt_soda', cat: 'bubbletea', name: 'Soda Tea', available: true, notes: true,
       variants: [
         { id: 'chico',  name: 'Chico 430 ml',  price: 55 },
         { id: 'grande', name: 'Grande 560 ml', price: 65 },
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-        { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' }, { id: 'mangoblue', name: 'Mango Blue Soda' },
+        { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' },
+        { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Pitahaya Soda' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
@@ -216,12 +217,12 @@ const DEFAULT_MENU = {
     {
       id: 'bt_fruit', cat: 'bubbletea', name: 'Fruit Tea', available: true, notes: true,
       variants: [
-        { id: 'chico',  name: 'Chico 430 ml',  price: 65 },
-        { id: 'grande', name: 'Grande 560 ml', price: 75 },
+        { id: 'chico',  name: 'Chico 430 ml',  price: 70 },
+        { id: 'grande', name: 'Grande 560 ml', price: 80 },
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-        { id: 'maracuya', name: 'Maracuyá' }, { id: 'jamaica', name: 'Jamaica' },
-        { id: 'mango', name: 'Mango' }, { id: 'durazno', name: 'Durazno' },
+        { id: 'tropical', name: 'Tropical' }, { id: 'jamaica', name: 'Jamaica' },
+        { id: 'mangomaracuya', name: 'Mango-Maracuya' }, { id: 'lichidurazno', name: 'Lichi-Durazno' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
