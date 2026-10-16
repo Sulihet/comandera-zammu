@@ -86,7 +86,7 @@ const Store = (() => {
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 65 }, { id: 'grande', name: 'Grande 560 ml', price: 75 }],
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' }, { id: 'taro', name: 'Taro' },
-          { id: 'bluepitahaya', name: 'Blue Pitahaya' }, { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
+          { id: 'bluepitahaya', name: 'Blue Dragon' }, { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
           { id: 'pistache', name: 'Pistache' },
         ] }] },
       { id: 'bt_matcha', cat: 'bubbletea', name: 'Matcha', available: true, notes: true,
@@ -103,7 +103,7 @@ const Store = (() => {
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 55 }, { id: 'grande', name: 'Grande 560 ml', price: 65 }],
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' },
-          { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Pitahaya Soda' },
+          { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Dragon Soda' },
         ] }] },
       { id: 'bt_fruit', cat: 'bubbletea', name: 'Fruit Tea', available: true, notes: true,
         variants: [{ id: 'chico', name: 'Chico 430 ml', price: 70 }, { id: 'grande', name: 'Grande 560 ml', price: 80 }],
@@ -165,18 +165,26 @@ const Store = (() => {
       changed = true;
     };
 
-    // Milk Tea: Blue Coco -> Blue Pitahaya.
+    // Renombra una opción por id (solo el texto), sin tocar su "available".
+    const renameOpt = (ch, optId, newName) => {
+      const o = ch && ch.options.find((x) => x.id === optId);
+      if (o && o.name !== newName) { o.name = newName; changed = true; }
+    };
+
+    // Milk Tea: Blue Coco -> Blue Dragon (antes "Blue Pitahaya").
     const mtSabor = saborOf('bt_milktea');
     removeOpt(mtSabor, 'bluecoco');
-    addOptBefore(mtSabor, { id: 'bluepitahaya', name: 'Blue Pitahaya' }, 'bluemango');
+    addOptBefore(mtSabor, { id: 'bluepitahaya', name: 'Blue Dragon' }, 'bluemango');
+    renameOpt(mtSabor, 'bluepitahaya', 'Blue Dragon'); // menús que ya lo tenían como "Blue Pitahaya"
 
-    // Soda: renombrar a "Soda Tea"; quitar Mango Blue; agregar Dragon-Mango y Pitahaya Soda.
+    // Soda: renombrar a "Soda Tea"; quitar Mango Blue; agregar Dragon-Mango y Dragon Soda.
     const soda = m.items.find((x) => x.id === 'bt_soda');
     if (soda && soda.name === 'Soda / Blue Soda') { soda.name = 'Soda Tea'; changed = true; }
     const sodaSabor = saborOf('bt_soda');
     removeOpt(sodaSabor, 'mangoblue');
     addOptBefore(sodaSabor, { id: 'dragonmango', name: 'Dragon-Mango Soda' }, null);
-    addOptBefore(sodaSabor, { id: 'pitahayasoda', name: 'Pitahaya Soda' }, null);
+    addOptBefore(sodaSabor, { id: 'pitahayasoda', name: 'Dragon Soda' }, null);
+    renameOpt(sodaSabor, 'pitahayasoda', 'Dragon Soda'); // menús que ya lo tenían como "Pitahaya Soda"
 
     // Fruit Tea: nueva lista de sabores; precio 70/80 solo si sigue en el viejo 65/75.
     const fruitSabor = saborOf('bt_fruit');

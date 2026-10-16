@@ -153,7 +153,7 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'blacksugar', name: 'Black Sugar' }, { id: 'mazapan', name: 'Mazapán' },
-        { id: 'taro', name: 'Taro' }, { id: 'bluepitahaya', name: 'Blue Pitahaya' },
+        { id: 'taro', name: 'Taro' }, { id: 'bluepitahaya', name: 'Blue Dragon' },
         { id: 'bluemango', name: 'Blue Mango' }, { id: 'bluefresa', name: 'Blue Fresa' },
         { id: 'pistache', name: 'Pistache' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
@@ -192,7 +192,7 @@ const DEFAULT_MENU = {
       ],
       choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
         { id: 'galaxy', name: 'Galaxy Soda' }, { id: 'fresablue', name: 'Fresa Blue Soda' },
-        { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Pitahaya Soda' },
+        { id: 'dragonmango', name: 'Dragon-Mango Soda' }, { id: 'pitahayasoda', name: 'Dragon Soda' },
       ] }, { id: 'dulzor', name: 'Dulzor', required: true, options: [
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
