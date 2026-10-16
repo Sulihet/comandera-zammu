@@ -194,6 +194,16 @@ const Store = (() => {
       if (fgr && fgr.price === 75) { fgr.price = 80; changed = true; }
     }
 
+    // --- Eliminar Pan al Vapor (Baos) del menú (oct 2026) ---
+    // Quita la categoría y sus platillos de menús ya guardados. Idempotente.
+    // (El historial de cierres pasados guarda su propia copia, no se toca.)
+    if ((m.categories || []).some((c) => c.id === 'baos')) {
+      m.categories = m.categories.filter((c) => c.id !== 'baos'); changed = true;
+    }
+    if (m.items.some((x) => x.cat === 'baos')) {
+      m.items = m.items.filter((x) => x.cat !== 'baos'); changed = true;
+    }
+
     return changed;
   }
 

@@ -112,9 +112,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   (`complete`) cuando ya se eligió la variante (si tiene) y todas las opciones requeridas.
   En las opciones **opcionales**, el botón **"Ninguno" tampoco se resalta** hasta que el
   cliente toca esa sección (flag `touched` por choice).
-- **Pan al Vapor (Baos):** Sencillo $30 (caramelo/chocolate/nutella) ·
-  Gourmet $35 (pistacho/cheese cake/frutos rojos) · Paquete 4 baos $105 ·
-  Paquete 6 baos $165.
+- **Pan al Vapor (Baos):** ELIMINADO del menú (oct 2026). Se quitó la categoría
+  `baos` y sus 4 platillos de `menu-data.js`, de `KITCHEN_CATS` y de los menús
+  guardados vía `migrateMenu`. Se conserva **a propósito** el caso `baos` en
+  `conceptOf` para que el historial de días que sí vendieron baos siga agrupándose
+  bien. Spec/plan: `docs/*/2026-10-15-eliminar-pan-al-vapor.md`.
 - **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55.
 - **Bubble Tea (la prepara la barista):** 5 platillos, cada uno = **variante de
   tamaño obligatoria** (Chico 430 ml / Grande 560 ml, precio distinto) + **choice
@@ -230,7 +232,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   para que cada cocinero identifique su sección. Ver `buildWhatsappText()`. **Sin total**
   (cocina no necesita el monto) y **solo con categorías de cocina**.
 - **Solo se envía a cocina lo que ellos preparan**: `KITCHEN_CATS = [fastfood, coreano,
-  baos]` vía `isKitchenLine()`, que **además excluye el hot-dog** (lo prepara otra persona).
+  bubbletea]` (baos se eliminó del menú oct 2026) vía `isKitchenLine()`, que **además
+  excluye el hot-dog** (lo prepara otra persona).
   Afecta el mensaje, `orderHasKitchen()` y `kitchenSig()`. Al enviar, el pedido SIEMPRE se
   guarda (cuenta en el cierre); el WhatsApp solo sale si incluye alguna línea de cocina. Si es solo bebidas/banderillas,
   no se envía (el botón cambia a "Guardar pedido (no va a cocina)"). Ver `sendOrder()` y

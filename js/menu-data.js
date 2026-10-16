@@ -16,7 +16,6 @@ const DEFAULT_MENU = {
     { id: 'dulce',    name: 'Banderillas Dulces',  icon: '🍡' },
     { id: 'coreano',  name: 'Coreano',             icon: '🍜' },
     { id: 'fastfood', name: 'Fast Food',           icon: '🍔' },
-    { id: 'baos',     name: 'Pan al Vapor',        icon: '🥟' },
     { id: 'bubbletea',name: 'Bubble Tea',          icon: '🧋' },
     { id: 'bebidas',  name: 'Bebidas',             icon: '🥤' },
   ],
@@ -144,22 +143,6 @@ const DEFAULT_MENU = {
         { id: 'media', name: 'Media orden', price: 35 },
       ],
     },
-
-    // ---- Pan al Vapor (Baos) ----
-    {
-      id: 'bao_sencillo', cat: 'baos', name: 'Bao Sencillo', available: true, price: 30,
-      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-        { id: 'caramelo', name: 'Caramelo' }, { id: 'chocolate', name: 'Chocolate semiamargo' }, { id: 'nutella', name: 'Nutella' },
-      ] }],
-    },
-    {
-      id: 'bao_gourmet', cat: 'baos', name: 'Bao Gourmet', available: true, price: 35,
-      choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
-        { id: 'pistacho', name: 'Crema de pistacho' }, { id: 'cheesecake', name: 'Cheese cake' }, { id: 'frutosrojos', name: 'Crema de frutos rojos' },
-      ] }],
-    },
-    { id: 'bao_paq4', cat: 'baos', name: 'Paquete 4 Baos', available: true, price: 105, notes: true },
-    { id: 'bao_paq6', cat: 'baos', name: 'Paquete 6 Baos', available: true, price: 165, notes: true },
 
     // ---- Bubble Tea (barista): tamaño (variante) + sabor + dulzor (choices) ----
     {

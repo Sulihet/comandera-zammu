@@ -21,7 +21,7 @@
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
   // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
-  const KITCHEN_CATS = ['fastfood', 'coreano', 'baos', 'bubbletea'];
+  const KITCHEN_CATS = ['fastfood', 'coreano', 'bubbletea'];
   // El hot-dog NO se manda a cocina (lo prepara otra persona), aunque sea fastfood.
   const isKitchenLine = (l) => KITCHEN_CATS.includes(l.cat) && !/hot\s*dog/i.test(l.name);
   const orderHasKitchen = (lines) => lines.some(isKitchenLine);
@@ -589,6 +589,8 @@
     if (cat === 'coreano') return { key: 'coreano', label: 'Coreano', icon: '🍜', order: 3 };
     if (cat === 'bubbletea') return { key: 'bubbletea', label: 'Bubble Tea', icon: '🧋', order: 4.8 };
     if (cat === 'bebidas') return { key: 'bebidas', label: 'Bebidas', icon: '🥤', order: 5 };
+    // Pan al vapor salió del menú (oct 2026), pero se conserva este caso para que
+    // los cierres/historial de días que SÍ vendieron baos sigan agrupándose bien.
     if (cat === 'baos') return { key: 'baos', label: 'Pan al vapor', icon: '🥟', order: 6 };
     if (cat === 'fastfood') {
       if (/hot\s*dog/i.test(l.name)) return { key: 'hotdogs', label: 'Hot-dogs', icon: '🌭', order: 4 };
