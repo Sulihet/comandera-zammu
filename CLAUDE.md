@@ -118,13 +118,18 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   guardados vía `migrateMenu`. Se conserva **a propósito** el caso `baos` en
   `conceptOf` para que el historial de días que sí vendieron baos siga agrupándose
   bien. Spec/plan: `docs/*/2026-10-15-eliminar-pan-al-vapor.md`.
-- **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55.
-- **Menú navideño (temporada, nov 2026):** categorías propias, NO van a WhatsApp
-  (solo cuentan en el cierre, conceptos propios en `conceptOf`); se apagan con el
-  toggle Disponible/Agotado al terminar. Spec/plan: `docs/*/2026-11-20-menu-navideno.md`.
-  - **Ponche Navideño 🎄** (cat `ponche`, item `ponche_nav`): Chico $25 · Medio litro $35 · Un litro $55.
-  - **Choco-bombas 🎄** (cat `chocobombas`, item `chocobomba`): 1 pza $35 · Caja de 2 $60 · Caja de 4 $115.
-  - (Gansito navideño va dentro de Banderillas Dulces, ver arriba.)
+- **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55 ·
+  **Ponche Navideño 🎄 (temporada)** (item `ponche_nav`, `cat:'bebidas'`): Chico $25 ·
+  Medio litro $35 · Un litro $55. (Antes era categoría propia; se movió dentro de
+  Bebidas, nov 2026 — `docs/*/2026-11-20-ponche-en-bebidas.md`.)
+- **Menú navideño (temporada, nov 2026):** NO van a WhatsApp (solo cuentan en el
+  cierre); se apagan con el toggle Disponible/Agotado al terminar. Spec/plan:
+  `docs/*/2026-11-20-menu-navideno.md`.
+  - **Choco-bombas 🎄** (cat propia `chocobombas`, item `chocobomba`, concepto propio
+    en `conceptOf`): 1 pza $35 · Caja de 2 $60 · Caja de 4 $115.
+  - **Gansito 🎄** va dentro de Banderillas Dulces (ver arriba). **Ponche Navideño 🎄**
+    va dentro de Bebidas (cuenta en el concepto 🥤 Bebidas). Se conserva el caso
+    `ponche` en `conceptOf` por si hubo ventas con la categoría vieja.
 - **Bubble Tea (la prepara la barista):** 5 platillos, cada uno = **variante de
   tamaño obligatoria** (Chico 430 ml / Grande 560 ml, precio distinto) + **choice
   de sabor** obligatorio + **choice de dulzor** obligatorio (Poco dulce / Normal /

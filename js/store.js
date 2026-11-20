@@ -220,22 +220,29 @@ const Store = (() => {
       dulceTipo.options.push({ id: 'gansito', name: 'Gansito 🎄 (temporada)', overridePrice: 50 });
       changed = true;
     }
-    // Ponche Navideño y Choco-bombas: categorías nuevas (no van a cocina). Al final.
-    const ensureCat = (cat) => {
-      m.categories = m.categories || [];
-      if (!m.categories.some((c) => c.id === cat.id)) { m.categories.push(cat); changed = true; }
-    };
-    ensureCat({ id: 'ponche', name: 'Ponche Navideño', icon: '🎄' });
-    ensureCat({ id: 'chocobombas', name: 'Choco-bombas', icon: '🍫' });
-    const navItems = [
-      { id: 'ponche_nav', cat: 'ponche', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
-        variants: [{ id: 'chico', name: 'Chico', price: 25 }, { id: 'medio', name: 'Medio litro', price: 35 }, { id: 'litro', name: 'Un litro', price: 55 }] },
-      { id: 'chocobomba', cat: 'chocobombas', name: 'Choco-bomba 🎄 (temporada)', available: true, notes: true,
-        variants: [{ id: 'uno', name: '1 pieza', price: 35 }, { id: 'caja2', name: 'Caja de 2', price: 60 }, { id: 'caja4', name: 'Caja de 4', price: 115 }] },
-    ];
-    navItems.forEach((it) => {
-      if (!m.items.some((x) => x.id === it.id)) { m.items.push(it); changed = true; }
-    });
+    // Choco-bombas: categoría nueva (no va a cocina).
+    m.categories = m.categories || [];
+    if (!m.categories.some((c) => c.id === 'chocobombas')) {
+      m.categories.push({ id: 'chocobombas', name: 'Choco-bombas', icon: '🍫' }); changed = true;
+    }
+    if (!m.items.some((x) => x.id === 'chocobomba')) {
+      m.items.push({ id: 'chocobomba', cat: 'chocobombas', name: 'Choco-bomba 🎄 (temporada)', available: true, notes: true,
+        variants: [{ id: 'uno', name: '1 pieza', price: 35 }, { id: 'caja2', name: 'Caja de 2', price: 60 }, { id: 'caja4', name: 'Caja de 4', price: 115 }] });
+      changed = true;
+    }
+    // Ponche Navideño: va DENTRO de Bebidas (no categoría propia).
+    // Quita la categoría 'ponche' si quedó de una versión anterior.
+    if (m.categories.some((c) => c.id === 'ponche')) {
+      m.categories = m.categories.filter((c) => c.id !== 'ponche'); changed = true;
+    }
+    const ponche = m.items.find((x) => x.id === 'ponche_nav');
+    if (ponche) {
+      if (ponche.cat !== 'bebidas') { ponche.cat = 'bebidas'; changed = true; } // reasigna, conserva precio/agotado
+    } else {
+      m.items.push({ id: 'ponche_nav', cat: 'bebidas', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
+        variants: [{ id: 'chico', name: 'Chico', price: 25 }, { id: 'medio', name: 'Medio litro', price: 35 }, { id: 'litro', name: 'Un litro', price: 55 }] });
+      changed = true;
+    }
 
     return changed;
   }

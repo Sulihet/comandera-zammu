@@ -18,7 +18,6 @@ const DEFAULT_MENU = {
     { id: 'fastfood', name: 'Fast Food',           icon: '🍔' },
     { id: 'bubbletea',name: 'Bubble Tea',          icon: '🧋' },
     { id: 'bebidas',  name: 'Bebidas',             icon: '🥤' },
-    { id: 'ponche',   name: 'Ponche Navideño',     icon: '🎄' },
     { id: 'chocobombas', name: 'Choco-bombas',     icon: '🍫' },
   ],
   items: [
@@ -245,10 +244,9 @@ const DEFAULT_MENU = {
         { id: 'limonada', name: 'Limonada azul' }, { id: 'fresa', name: 'Fresa' }, { id: 'moras', name: 'Moras' }, { id: 'naranja', name: 'Naranja' },
       ] }],
     },
-
-    // ---- Ponche Navideño (temporada): un producto en 3 tamaños ----
+    // Ponche Navideño (temporada): dentro de Bebidas, 3 tamaños.
     {
-      id: 'ponche_nav', cat: 'ponche', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
+      id: 'ponche_nav', cat: 'bebidas', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
       variants: [
         { id: 'chico', name: 'Chico',        price: 25 },
         { id: 'medio', name: 'Medio litro',  price: 35 },
