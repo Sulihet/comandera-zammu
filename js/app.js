@@ -592,6 +592,8 @@
     // Pan al vapor salió del menú (oct 2026), pero se conserva este caso para que
     // los cierres/historial de días que SÍ vendieron baos sigan agrupándose bien.
     if (cat === 'baos') return { key: 'baos', label: 'Pan al vapor', icon: '🥟', order: 6 };
+    if (cat === 'ponche') return { key: 'ponche', label: 'Ponche Navideño', icon: '🎄', order: 7 };
+    if (cat === 'chocobombas') return { key: 'chocobombas', label: 'Choco-bombas', icon: '🍫', order: 8 };
     if (cat === 'fastfood') {
       if (/hot\s*dog/i.test(l.name)) return { key: 'hotdogs', label: 'Hot-dogs', icon: '🌭', order: 4 };
       if (/papas/i.test(l.name)) return { key: 'papas', label: 'Papas', icon: '🍟', order: 4.5 };

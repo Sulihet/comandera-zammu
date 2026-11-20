@@ -89,7 +89,8 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
     Cheddar · Flamin' Hot · Ramen.
   - Coberturas especiales: **Boneless $70 · Pizza $70** → precio total FIJO $70
     (reemplaza el precio de la base, sin importar cuál base se elija).
-- **Banderillas Dulces** $60 c/u: Milky Way · Kinder Delice · Choco Roles.
+- **Banderillas Dulces** $60 c/u: Milky Way · Kinder Delice · Choco Roles ·
+  **Gansito 🎄 (temporada, $50 vía `overridePrice`)**.
 - **Coreano:** Ramen Zammu Waifuu $105 · Dumpling & Ramen (mitad/mitad) $100 ·
   Dumplings (5 pzas) $70. **Tipo de ramen** (Habanero Limón / Queso / Carbonara, primero)
   solo en Ramen y Dumpling & Ramen; luego nivel de picante (Poco/Dos/Muy/Extremo). Sin costo.
@@ -118,6 +119,12 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   `conceptOf` para que el historial de días que sí vendieron baos siga agrupándose
   bien. Spec/plan: `docs/*/2026-10-15-eliminar-pan-al-vapor.md`.
 - **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55.
+- **Menú navideño (temporada, nov 2026):** categorías propias, NO van a WhatsApp
+  (solo cuentan en el cierre, conceptos propios en `conceptOf`); se apagan con el
+  toggle Disponible/Agotado al terminar. Spec/plan: `docs/*/2026-11-20-menu-navideno.md`.
+  - **Ponche Navideño 🎄** (cat `ponche`, item `ponche_nav`): Chico $25 · Medio litro $35 · Un litro $55.
+  - **Choco-bombas 🎄** (cat `chocobombas`, item `chocobomba`): 1 pza $35 · Caja de 2 $60 · Caja de 4 $115.
+  - (Gansito navideño va dentro de Banderillas Dulces, ver arriba.)
 - **Bubble Tea (la prepara la barista):** 5 platillos, cada uno = **variante de
   tamaño obligatoria** (Chico 430 ml / Grande 560 ml, precio distinto) + **choice
   de sabor** obligatorio + **choice de dulzor** obligatorio (Poco dulce / Normal /

@@ -18,6 +18,8 @@ const DEFAULT_MENU = {
     { id: 'fastfood', name: 'Fast Food',           icon: '🍔' },
     { id: 'bubbletea',name: 'Bubble Tea',          icon: '🧋' },
     { id: 'bebidas',  name: 'Bebidas',             icon: '🥤' },
+    { id: 'ponche',   name: 'Ponche Navideño',     icon: '🎄' },
+    { id: 'chocobombas', name: 'Choco-bombas',     icon: '🍫' },
   ],
   items: [
     // ---- Banderillas Saladas: base + cobertura ----
@@ -55,6 +57,7 @@ const DEFAULT_MENU = {
             { id: 'milkyway', name: 'Milky Way' },
             { id: 'kinder',   name: 'Kinder Delice' },
             { id: 'choco',    name: 'Choco Roles' },
+            { id: 'gansito',  name: 'Gansito 🎄 (temporada)', overridePrice: 50 },
           ],
         },
       ],
@@ -241,6 +244,26 @@ const DEFAULT_MENU = {
       choices: [{ id: 'sabor', name: 'Sabor', required: false, options: [
         { id: 'limonada', name: 'Limonada azul' }, { id: 'fresa', name: 'Fresa' }, { id: 'moras', name: 'Moras' }, { id: 'naranja', name: 'Naranja' },
       ] }],
+    },
+
+    // ---- Ponche Navideño (temporada): un producto en 3 tamaños ----
+    {
+      id: 'ponche_nav', cat: 'ponche', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
+      variants: [
+        { id: 'chico', name: 'Chico',        price: 25 },
+        { id: 'medio', name: 'Medio litro',  price: 35 },
+        { id: 'litro', name: 'Un litro',     price: 55 },
+      ],
+    },
+
+    // ---- Choco-bombas (temporada): un producto en 3 presentaciones ----
+    {
+      id: 'chocobomba', cat: 'chocobombas', name: 'Choco-bomba 🎄 (temporada)', available: true, notes: true,
+      variants: [
+        { id: 'uno',   name: '1 pieza',     price: 35 },
+        { id: 'caja2', name: 'Caja de 2',   price: 60 },
+        { id: 'caja4', name: 'Caja de 4',   price: 115 },
+      ],
     },
   ],
 };
