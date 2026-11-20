@@ -212,18 +212,6 @@ const DEFAULT_MENU = {
         { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
       ] }],
     },
-    // Pumpkin Spice: bebida de temporada (platillo propio, una sola bebida: sin sabor).
-    {
-      id: 'bt_pumpkin', cat: 'bubbletea', name: 'Pumpkin Spice 🍂 (temporada)', available: true, notes: true,
-      variants: [
-        { id: 'chico',  name: 'Chico 430 ml',  price: 78 },
-        { id: 'grande', name: 'Grande 560 ml', price: 88 },
-      ],
-      choices: [{ id: 'dulzor', name: 'Dulzor', required: true, options: [
-        { id: 'poco', name: 'Poco dulce' }, { id: 'normal', name: 'Normal' }, { id: 'extra', name: 'Extra dulce' },
-      ] }],
-    },
-
     // ---- Bebidas ----
     {
       id: 'refresco', cat: 'bebidas', name: 'Refresco', available: true, price: 20,

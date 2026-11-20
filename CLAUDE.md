@@ -143,10 +143,12 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
   - *(Carta actualizada oct 2026: `docs/*/2026-10-15-bubble-tea-menu-actualizado.md`.
     Cambios de sabores/precio en menús ya guardados vía `migrateMenu`, idempotente,
     conservando los "agotados" de los sabores que se quedan.)*
-  - **Pumpkin Spice 🍂 (temporada)** $78/$88 — **platillo propio** (`bt_pumpkin`),
-    una sola bebida (sin choice de sabor), solo Tamaño + Dulzor. Se apaga con el
-    toggle Disponible/Agotado al acabar la temporada. Spec/plan:
-    `docs/*/2026-10-09-bubble-tea-pumpkin-pistache.md`.
+  - **Pumpkin Spice** (`bt_pumpkin`): ELIMINADO (nov 2026, terminó su temporada de
+    otoño). Se quitó de `menu-data.js`, de `bubbleTeaItems` (para no re-inyectarlo) y
+    de los menús guardados vía `migrateMenu`. Fue un platillo propio ($78/$88, solo
+    Tamaño + Dulzor, sin sabor). Historia: `docs/*/2026-10-09-bubble-tea-pumpkin-pistache.md`
+    (alta) y `docs/*/2026-11-20-quitar-pumpkin-spice.md` (baja). Si regresa el próximo
+    otoño, se vuelve a agregar en código.
   - **Sí va al grupo de WhatsApp** en su propia sección `🧋 BUBBLE TEA` (categoría
     `bubbletea` agregada a `KITCHEN_CATS`; la prepara la barista, mismo grupo que
     cocina). Un pedido solo de barra **sí se envía**. Cuenta en el cierre como

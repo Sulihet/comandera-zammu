@@ -110,10 +110,6 @@ const Store = (() => {
         choices: [{ id: 'sabor', name: 'Sabor', required: true, options: [
           { id: 'tropical', name: 'Tropical' }, { id: 'jamaica', name: 'Jamaica' }, { id: 'mangomaracuya', name: 'Mango-Maracuya' }, { id: 'lichidurazno', name: 'Lichi-Durazno' },
         ] }] },
-      // Pumpkin Spice: temporada, platillo propio (sin sabor), con dulzor.
-      { id: 'bt_pumpkin', cat: 'bubbletea', name: 'Pumpkin Spice 🍂 (temporada)', available: true, notes: true,
-        variants: [{ id: 'chico', name: 'Chico 430 ml', price: 78 }, { id: 'grande', name: 'Grande 560 ml', price: 88 }],
-        choices: [] },
     ];
     // Dulzor (Poco / Normal / Extra) en Bubble Tea: choice obligatorio, sin costo.
     const dulzorChoice = () => ({ id: 'dulzor', name: 'Dulzor', required: true, options: [
@@ -242,6 +238,12 @@ const Store = (() => {
       m.items.push({ id: 'ponche_nav', cat: 'bebidas', name: 'Ponche Navideño 🎄 (temporada)', available: true, notes: true,
         variants: [{ id: 'chico', name: 'Chico', price: 25 }, { id: 'medio', name: 'Medio litro', price: 35 }, { id: 'litro', name: 'Un litro', price: 55 }] });
       changed = true;
+    }
+
+    // Pumpkin Spice: temporada de otoño terminada (nov 2026) → eliminarlo del menú.
+    // (Ya se quitó de bubbleTeaItems arriba para que no se re-inyecte.) Idempotente.
+    if (m.items.some((x) => x.id === 'bt_pumpkin')) {
+      m.items = m.items.filter((x) => x.id !== 'bt_pumpkin'); changed = true;
     }
 
     return changed;
