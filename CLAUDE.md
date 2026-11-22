@@ -121,7 +121,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Bebidas:** Refresco $20 · Té Arizona $20 · Bebida coreana $55 ·
   **Ponche Navideño 🎄 (temporada)** (item `ponche_nav`, `cat:'bebidas'`): Chico $25 ·
   Medio litro $35 · Un litro $55. (Antes era categoría propia; se movió dentro de
-  Bebidas, nov 2026 — `docs/*/2026-11-20-ponche-en-bebidas.md`.)
+  Bebidas, nov 2026 — `docs/*/2026-11-20-ponche-en-bebidas.md`.) **El Ponche SÍ va a
+  cocina** (excepción dentro de Bebidas): `isPonche(l)` (por id `ponche_nav` o nombre)
+  lo marca como línea de cocina en `isKitchenLine`, y `buildWhatsappText` le da su
+  propia sección `━━ 🎄 PONCHE NAVIDEÑO ━━`. Las demás bebidas siguen sin enviarse.
+  Spec/plan: `docs/*/2026-11-21-ponche-a-cocina.md`.
 - **Menú navideño (temporada, nov 2026):** NO van a WhatsApp (solo cuentan en el
   cierre); se apagan con el toggle Disponible/Agotado al terminar. Spec/plan:
   `docs/*/2026-11-20-menu-navideno.md`.

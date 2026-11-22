@@ -22,8 +22,11 @@
 
   // Categorías que cocina SÍ prepara (solo estas se envían por WhatsApp).
   const KITCHEN_CATS = ['fastfood', 'coreano', 'bubbletea'];
+  // El Ponche Navideño vive en Bebidas pero SÍ va a cocina (excepción). Se detecta
+  // por id o por nombre para cubrir comandera y pedidos en línea.
+  const isPonche = (l) => l.itemId === 'ponche_nav' || /ponche/i.test(l.name || '');
   // El hot-dog NO se manda a cocina (lo prepara otra persona), aunque sea fastfood.
-  const isKitchenLine = (l) => KITCHEN_CATS.includes(l.cat) && !/hot\s*dog/i.test(l.name);
+  const isKitchenLine = (l) => (KITCHEN_CATS.includes(l.cat) || isPonche(l)) && !/hot\s*dog/i.test(l.name);
   const orderHasKitchen = (lines) => lines.some(isKitchenLine);
 
   // firma de las líneas de cocina; sirve para saber si una corrección cambió
@@ -268,12 +271,14 @@
       if (order.geoloc) t += `🗺️ https://maps.google.com/?q=${order.geoloc.lat},${order.geoloc.lng}\n`;
     }
 
-    // solo las líneas que cocina prepara (excluye hot-dog)
+    // solo las líneas que cocina prepara (excluye hot-dog). El Ponche va a su propia
+    // llave 'ponche' (aunque su categoría sea 'bebidas') para tener sección aparte.
     const groups = {};
     order.lines.forEach((l) => {
       if (!isKitchenLine(l)) return;
-      if (!groups[l.cat]) groups[l.cat] = [];
-      groups[l.cat].push(l);
+      const key = isPonche(l) ? 'ponche' : l.cat;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(l);
     });
 
     // antepone "Extra" al extra, salvo que el nombre ya lo incluya (ej. "Carne extra")
@@ -299,6 +304,11 @@
       t += `\n*━━ ${`${cat.icon || ''} ${cat.name}`.trim().toUpperCase()} ━━*\n`;
       lines.forEach((l) => { t += renderLine(l); });
     });
+    // Sección propia del Ponche Navideño (va a cocina pese a ser Bebidas).
+    if (groups.ponche && groups.ponche.length) {
+      t += `\n*━━ 🎄 PONCHE NAVIDEÑO ━━*\n`;
+      groups.ponche.forEach((l) => { t += renderLine(l); });
+    }
 
     return t; // sin total: cocina no necesita el monto
   }
