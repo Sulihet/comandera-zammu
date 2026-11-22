@@ -228,6 +228,11 @@ y la pérdida de información del método actual (mandar la orden a mano por cha
 - **Editar pedido enviado** (`editOrder()`): recarga las líneas al carrito, quita el
   original y fija `editingNum`. Al reenviar, `sendOrder()` reutiliza el número, marca
   `corrected` y el mensaje sale como "✏️ CORRECCIÓN". El cierre no se duplica.
+- **`uid` en toda línea del carrito** (`ensureUids()`): el botón "Quitar" borra por
+  `uid`. Las líneas de un pedido en línea (`pedir.js buildOrderPayload`) o de pedidos
+  viejos podían no traer `uid` → no se podían quitar. `ensureUids` asigna `uid` al
+  cargar (`editOnline`, `editOrder`, `acceptOnline`); el link ahora manda `uid` de
+  origen. Fix: `docs/*/2026-11-21-fix-quitar-item-pedido-en-linea.md`.
 - **Extras = multi-selección** (`item.extras[]` con `priceDelta`, Set en la hoja);
   distinto de `choices` (radio). Los extras suman al precio y salen en línea `➕`.
   Sus precios son **editables en la sección Menú** (inputs `data-xprice="item:extra"`).

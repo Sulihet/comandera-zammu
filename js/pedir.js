@@ -577,7 +577,7 @@
       payMode: mode === 'domicilio' ? payMode : null,
       payBill: mode === 'domicilio' && payMode === 'efectivo' ? billValue() : '',
       lines: cart.map((l) => ({
-        itemId: l.itemId, name: l.name, cat: l.cat, detail: l.detail,
+        uid: l.uid, itemId: l.itemId, name: l.name, cat: l.cat, detail: l.detail,
         extras: l.extras || [], dressings: l.dressings || [],
         unitPrice: l.unitPrice, qty: l.qty, notes: l.notes || '',
       })),

@@ -39,6 +39,11 @@
       .join('||');
   }
 
+  // Las líneas que llegan de un pedido en línea (o pedidos viejos) pueden no traer
+  // `uid`. El botón "Quitar" del carrito borra por `uid`, así que garantizamos uno
+  // para cada línea al cargarla (si ya tiene, se respeta).
+  const ensureUids = (lines) => (lines || []).map((l) => (l.uid ? l : { ...l, uid: uid() }));
+
   // Estado del pedido en la lista de Cierre (solo control visual, no toca dinero).
   // 2 valores: al enviarse nace "En preparación" y con un toque alterna a "Entregado".
   const ORDER_STATUS = ['preparacion', 'entregado'];
@@ -735,7 +740,7 @@
     if (!confirm(`¿Editar el pedido #${o.num}? Se cargará para modificarlo y lo vuelves a enviar como corrección.`)) return;
     // carga las líneas al carrito y quita el original (se re-guardará con el mismo número al reenviar)
     editingOriginal = Store.clone(o); // guarda el original íntegro por si se cancela la edición
-    cart = Store.clone(o.lines);
+    cart = ensureUids(Store.clone(o.lines));
     Store.saveCart(cart);
     config.serviceMode = o.serviceMode || 'aqui';
     config.customerName = o.customerName || ''; // recarga el nombre para poder editarlo
@@ -1063,7 +1068,7 @@
       customerName: src.customerName || '',
       address: src.address || '', reference: src.reference || '', geoloc: src.geoloc || null,
       payMode: src.payMode || null, payBill: src.payBill || '',
-      lines: Store.clone(src.lines || []),
+      lines: ensureUids(Store.clone(src.lines || [])),
       total: lineTotal(src),
       canceled: false, status: 'preparacion', online: true,
     };
@@ -1089,7 +1094,7 @@
     if (cart.length) { alert('Tienes un pedido en curso. Envíalo o quítalo antes de editar otro.'); return; }
     const src = onlineOrders.find((o) => o.id === id);
     if (!src) return;
-    cart = Store.clone(src.lines || []);
+    cart = ensureUids(Store.clone(src.lines || []));
     Store.saveCart(cart);
     // el modo del cliente (recoger/domicilio) se mapea a "para llevar" para el flujo del mesero
     config.serviceMode = (src.serviceMode === 'aqui' || src.serviceMode === 'llevar') ? src.serviceMode : 'llevar';
